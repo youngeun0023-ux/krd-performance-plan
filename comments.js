@@ -1,15 +1,24 @@
 (function () {
   const listeners = new Set();
-  let serial = 0;
-  let busy = false;
   const pending = new Map();
-  function emit(rows, error) {
+  const CACHE_KEY = 'krd-shared-comments-v2';
+  let serial = 0, started = false, inFlight = null, pollTimer = null;
+  let latestRows = null, lastRequestAt = 0, errors = 0, queued = false;
+  try {
+    const cache = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+    if (cache && Array.isArray(cache.rows)) latestRows = cache.rows;
+  } catch (_) {}
+  function emit(rows, error, meta) {
     if (rows && !error) {
-      for (const [requestId, operation] of pending) {
-        if (operation.confirmed(rows)) operation.finish(null);
+      latestRows = rows;
+      if (!(meta && meta.cached)) {
+        try { localStorage.setItem(CACHE_KEY,JSON.stringify({rows,at:Date.now()})); } catch (_) {}
+        for (const operation of [...pending.values()]) {
+          if (operation.confirmed(rows)) operation.finish(null);
+        }
       }
     }
-    listeners.forEach(fn => fn(rows,error,!error));
+    listeners.forEach(fn => fn(rows,error,meta || {}));
   }
   function endpoint() {
     const url = window.KRD_SHEETS_URL;
@@ -27,7 +36,6 @@
       let timer;
       function clean() {
         clearTimeout(timer); script.remove();
-        // A response can arrive after a timeout; keep a harmless callback briefly.
         window[name] = () => {};
         setTimeout(() => { delete window[name]; },60000);
       }
@@ -36,16 +44,39 @@
       timer = setTimeout(() => { clean(); reject(new Error('구글시트 응답 지연')); },20000);
       const params = new URLSearchParams({callback:name,t:String(Date.now())});
       if (requestId) params.set('requestId',requestId);
+      script.async = true;
       script.src = url + '?' + params;
       document.head.appendChild(script);
     });
   }
-  async function refresh() {
-    if (busy) return;
-    busy = true;
-    try { const payload = await read(); emit(payload.comments,null); }
-    catch(error) { emit(null,error); }
-    finally { busy = false; }
+  function schedule(delay) {
+    clearTimeout(pollTimer);
+    if (started && (!document.hidden || pending.size)) pollTimer = setTimeout(() => refresh(),delay);
+  }
+  function refresh(force) {
+    if (!started) return Promise.resolve();
+    if (inFlight) { if (force) queued = true; return inFlight; }
+    if (document.hidden && !pending.size) return Promise.resolve();
+    const elapsed = Date.now() - lastRequestAt;
+    if (!force && elapsed < 1000) { schedule(1000-elapsed); return Promise.resolve(); }
+    clearTimeout(pollTimer);
+    lastRequestAt = Date.now();
+    const requestId = pending.keys().next().value;
+    inFlight = read(requestId).then(payload => {
+      errors = 0;
+      const operation = pending.get(requestId);
+      if (operation && payload.operation && !payload.operation.ok) {
+        operation.finish(new Error(payload.operation.error || '저장 실패'));
+      }
+      emit(payload.comments,null);
+      if (pending.has(requestId) && payload.operation && payload.operation.ok) pending.get(requestId).finish(null);
+    }).catch(error => { errors++; emit(null,error); }).finally(() => {
+      inFlight = null;
+      const immediate = queued;
+      queued = false;
+      schedule(immediate ? 0 : errors ? Math.min(10000,2000 * errors) : pending.size ? 1000 : 2000);
+    });
+    return inFlight;
   }
   function write(action,fields) {
     const requestId = crypto.randomUUID();
@@ -56,55 +87,45 @@
       const timer = setTimeout(() => finish(new Error('저장 확인이 지연됩니다. 댓글 목록을 확인한 뒤 다시 시도해주세요.')),45000);
       function finish(error) {
         if (!pending.has(requestId)) return;
-        pending.delete(requestId);
-        clearTimeout(timer);
-        controller.abort();
+        pending.delete(requestId); clearTimeout(timer); controller.abort();
         error ? reject(error) : resolve();
       }
       function confirmed(rows) {
-        if (action === 'add') {
-          return rows.some(row => row.id === 'm_' + requestId && row.cardId === fields.cardId && row.body === fields.body.trim().slice(0,3000));
-        }
+        if (action === 'add') return rows.some(row => row.id === 'm_' + requestId && row.cardId === fields.cardId && row.body === fields.body.trim().slice(0,3000));
         const row = rows.find(row => row.id === fields.id);
-        if (action === 'resolve') return !!row && row.resolved === fields.resolved;
-        return action === 'delete' && !row;
+        return action === 'resolve' ? !!row && row.resolved === fields.resolved : action === 'delete' && !row;
       }
       pending.set(requestId,{confirmed,finish});
-      // Start confirmation immediately: Google may store the comment long before
-      // its redirect/opaque POST response finishes. HTTP completion is not proof.
+      // Confirm through the shared, single read loop, without awaiting POST redirects.
       fetch(url,{method:'POST',mode:'no-cors',signal:controller.signal,
-        headers:{'Content-Type':'text/plain;charset=UTF-8'},
-        body:JSON.stringify({action,requestId,...fields})
+        headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify({action,requestId,...fields})
       }).catch(() => {});
-      (async () => {
-        while (pending.has(requestId)) {
-          try {
-            const payload = await read(requestId);
-            if (!pending.has(requestId)) return;
-            if (payload.operation && !payload.operation.ok) {
-              finish(new Error(payload.operation.error || '저장 실패'));
-              return;
-            }
-            emit(payload.comments,null);
-            if (payload.operation && payload.operation.ok) finish(null);
-          } catch(error) {
-            // A normal refresh can still confirm the exact saved row.
-            // Retry transient read/POST errors until the overall deadline.
-            if (!pending.has(requestId)) return;
-          }
-          if (pending.has(requestId)) await new Promise(done => setTimeout(done,1000));
-        }
-      })();
+      refresh(true);
     });
   }
   window.KRDComments = {
-    subscribe(fn) { listeners.add(fn); refresh(); return () => listeners.delete(fn); },
+    subscribe(fn) {
+      listeners.add(fn);
+      if (latestRows) fn(latestRows,null,{cached:true});
+      if (started) refresh();
+      return () => listeners.delete(fn);
+    },
     refresh,
     add(cardId,author,body) { return write('add',{cardId,author,body}); },
     resolve(id,resolved) { return write('resolve',{id,resolved}); },
     remove(id) { return write('delete',{id}); }
   };
-  setInterval(() => { if (!document.hidden) refresh(); },2000);
-  document.addEventListener('visibilitychange',() => { if (!document.hidden) refresh(); });
-  window.addEventListener('focus',refresh);
+  function start() {
+    if (started) return;
+    started = true;
+    // Run after load has finished so Google reads cannot prolong page loading.
+    setTimeout(() => refresh(true),0);
+  }
+  if (document.readyState === 'complete') start();
+  else window.addEventListener('load',start,{once:true});
+  document.addEventListener('visibilitychange',() => {
+    if (!document.hidden) refresh(true);
+    else if (!pending.size) clearTimeout(pollTimer);
+  });
+  window.addEventListener('focus',() => refresh());
 })();
