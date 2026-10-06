@@ -1483,7 +1483,7 @@ document.getElementById('saveBtn').addEventListener('click', function(){
 
   var syncNote = document.getElementById('cmtSyncNote');
   var addBtn = document.getElementById('cmtAddBtn');
-  var syncBusy = false;
+  var hiddenCommentIds = new Set();
 
   function setSync(message, isError){
     syncNote.textContent = message;
@@ -1496,7 +1496,7 @@ document.getElementById('saveBtn').addEventListener('click', function(){
     if(!rows) return;
     var byCard = {};
     rows.forEach(function(c){
-      if(!/^c\d+$/.test(c.cardId) || !/^[a-zA-Z0-9_-]+$/.test(c.id)) return;
+      if(!/^c\d+$/.test(c.cardId) || !/^[a-zA-Z0-9_-]+$/.test(c.id) || hiddenCommentIds.has(c.id)) return;
       if(!byCard[c.cardId]) byCard[c.cardId] = [];
       byCard[c.cardId].push({id:c.id,author:c.author,ts:isoToKST(c.createdAt),text:c.body,resolved:!!c.resolved});
     });
@@ -1541,10 +1541,30 @@ document.getElementById('saveBtn').addEventListener('click', function(){
         } catch(err) { setSync('코멘트 상태를 변경하지 못했습니다 · 다시 시도해주세요', true); }
       }
     } else if(act === 'delete'){
-      if(!confirm('이 코멘트를 삭제할까요?')) return;
+      if(hiddenCommentIds.has(id) || !confirm('이 코멘트를 삭제할까요?')) return;
+      var originalList = data.byCard[cid] || [];
+      var deletedIndex = originalList.findIndex(function(c){ return c.id === id; });
+      var deletedComment = originalList[deletedIndex];
+      if(!deletedComment) return;
+      hiddenCommentIds.add(id);
+      data.byCard[cid] = originalList.filter(function(c){ return c.id !== id; });
+      persist(); renderAll();
+      setSync('화면에서 삭제했습니다 · 공유 저장소에 반영 중입니다', false);
       try {
         await window.KRDComments.remove(id);
-      } catch(err) { setSync('코멘트를 삭제하지 못했습니다 · 다시 시도해주세요', true); }
+        // Keep the confirmed deletion hidden for this page session so an older
+        // overlapping read cannot bring it back.
+        setSync('코멘트가 삭제되었습니다 · 다른 사용자에게도 반영됩니다', false);
+      } catch(err) {
+        hiddenCommentIds.delete(id);
+        var currentList = data.byCard[cid] || [];
+        if(!currentList.some(function(c){ return c.id === id; })) {
+          currentList.splice(Math.min(deletedIndex, currentList.length), 0, deletedComment);
+          data.byCard[cid] = currentList;
+        }
+        persist(); renderAll();
+        setSync('삭제를 확인하지 못해 댓글을 복원했습니다 · 잠시 후 다시 확인해주세요', true);
+      }
     } else if(act === 'jump'){
       var card = cardByCid(cid);
       if(card){ card.scrollIntoView({behavior:'smooth', block:'center'}); openModal(cid); }
