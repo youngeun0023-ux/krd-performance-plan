@@ -1,0 +1,28 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /comments/{commentId} {
+      function signedIn() {
+        return request.auth != null;
+      }
+      function validComment() {
+        let c = request.resource.data;
+        return c.keys().hasAll(['id', 'cardId', 'author', 'body', 'resolved', 'createdAt', 'updatedAt'])
+          && c.keys().hasOnly(['id', 'cardId', 'author', 'body', 'resolved', 'createdAt', 'updatedAt'])
+          && c.id == commentId
+          && c.cardId is string && c.cardId.matches('^c[0-9]+$')
+          && c.author is string && c.author.size() <= 20
+          && c.body is string && c.body.size() > 0 && c.body.size() <= 3000
+          && c.resolved is bool
+          && c.createdAt is string && c.createdAt.size() <= 40
+          && c.updatedAt is string && c.updatedAt.size() <= 40;
+      }
+      allow read: if signedIn();
+      allow create: if signedIn() && validComment();
+      allow update: if signedIn() && validComment()
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['resolved', 'updatedAt']);
+      allow delete: if signedIn();
+    }
+  }
+}
