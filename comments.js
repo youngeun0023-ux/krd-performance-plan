@@ -2,7 +2,15 @@
   const listeners = new Set();
   let serial = 0;
   let busy = false;
-  function emit(rows, error) { listeners.forEach(fn => fn(rows,error,!error)); }
+  const pending = new Map();
+  function emit(rows, error) {
+    if (rows && !error) {
+      for (const [requestId, operation] of pending) {
+        if (operation.confirmed(rows)) operation.finish(null);
+      }
+    }
+    listeners.forEach(fn => fn(rows,error,!error));
+  }
   function endpoint() {
     const url = window.KRD_SHEETS_URL;
     if (!/^https:\/\/script\.google\.com\/macros\/s\/[a-zA-Z0-9_-]+\/exec$/.test(url || '')) {
@@ -39,22 +47,55 @@
     catch(error) { emit(null,error); }
     finally { busy = false; }
   }
-  async function write(action,fields) {
+  function write(action,fields) {
     const requestId = crypto.randomUUID();
-    const url = endpoint();
-    // The opaque HTTP response is NOT a save acknowledgement.
-    await fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify({action,requestId,...fields})});
-    const start = Date.now();
-    while (Date.now()-start < 30000) {
-      const payload = await read(requestId);
-      if (payload.operation) {
-        if (!payload.operation.ok) throw new Error(payload.operation.error || '저장 실패');
-        emit(payload.comments,null);
-        return;
+    let url;
+    try { url = endpoint(); } catch(error) { return Promise.reject(error); }
+    return new Promise((resolve,reject) => {
+      const controller = new AbortController();
+      const timer = setTimeout(() => finish(new Error('저장 확인이 지연됩니다. 댓글 목록을 확인한 뒤 다시 시도해주세요.')),45000);
+      function finish(error) {
+        if (!pending.has(requestId)) return;
+        pending.delete(requestId);
+        clearTimeout(timer);
+        controller.abort();
+        error ? reject(error) : resolve();
       }
-      await new Promise(resolve => setTimeout(resolve,1000));
-    }
-    throw new Error('저장 확인이 지연됩니다. 댓글 목록을 확인해주세요.');
+      function confirmed(rows) {
+        if (action === 'add') {
+          return rows.some(row => row.id === 'm_' + requestId && row.cardId === fields.cardId && row.body === fields.body.trim().slice(0,3000));
+        }
+        const row = rows.find(row => row.id === fields.id);
+        if (action === 'resolve') return !!row && row.resolved === fields.resolved;
+        return action === 'delete' && !row;
+      }
+      pending.set(requestId,{confirmed,finish});
+      // Start confirmation immediately: Google may store the comment long before
+      // its redirect/opaque POST response finishes. HTTP completion is not proof.
+      fetch(url,{method:'POST',mode:'no-cors',signal:controller.signal,
+        headers:{'Content-Type':'text/plain;charset=UTF-8'},
+        body:JSON.stringify({action,requestId,...fields})
+      }).catch(() => {});
+      (async () => {
+        while (pending.has(requestId)) {
+          try {
+            const payload = await read(requestId);
+            if (!pending.has(requestId)) return;
+            if (payload.operation && !payload.operation.ok) {
+              finish(new Error(payload.operation.error || '저장 실패'));
+              return;
+            }
+            emit(payload.comments,null);
+            if (payload.operation && payload.operation.ok) finish(null);
+          } catch(error) {
+            // A normal refresh can still confirm the exact saved row.
+            // Retry transient read/POST errors until the overall deadline.
+            if (!pending.has(requestId)) return;
+          }
+          if (pending.has(requestId)) await new Promise(done => setTimeout(done,1000));
+        }
+      })();
+    });
   }
   window.KRDComments = {
     subscribe(fn) { listeners.add(fn); refresh(); return () => listeners.delete(fn); },
