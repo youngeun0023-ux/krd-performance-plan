@@ -1,0 +1,1575 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>경평 계량평가 대응 KRD 성과관리시스템 구축 계획</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<style>
+  /* ===== 색상 및 기본 토큰 ===== */
+  :root{
+    --ink:#16233a;            /* 딥 네이비 (제목/본문 강조) */
+    --ink-soft:#3d4b63;       /* 보조 텍스트 */
+    --muted:#7a8699;          /* 흐린 텍스트 */
+    --bg:#eceff4;             /* 페이지 배경 */
+    --card:#ffffff;           /* 카드 배경 */
+    --line:#dde3ec;           /* 경계선 */
+    --team-data:#2f6df0;      /* 연구데이터분석팀 - 블루 */
+    --team-data-bg:#eaf1fe;
+    --team-strat:#0f9b7d;     /* 혁신전략팀 - 틸 */
+    --team-strat-bg:#e5f5f0;
+    --team-ai:#e0871a;        /* AI정보혁신총괄팀 - 앰버 */
+    --team-ai-bg:#fdf1e0;
+    --paper:#1d6fbf;          /* 논문 계열 강조 */
+    --patent:#8a5cd6;         /* 특허 계열 강조 */
+    --radius:14px;
+    --shadow:0 1px 3px rgba(22,35,58,.06),0 8px 24px rgba(22,35,58,.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"Pretendard","Pretendard Variable",-apple-system,BlinkMacSystemFont,"Malgun Gothic",sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.65;font-size:21.6px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1240px;margin:0 auto;padding:0 24px}
+
+  /* ===== 상단 편집 툴바 ===== */
+  .toolbar{
+    position:sticky;top:0;z-index:100;
+    background:rgba(255,255,255,.92);backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:12px;
+    padding:10px 24px;
+  }
+  .toolbar .brand{font-weight:700;font-size:18.9px;letter-spacing:-.01em;color:var(--ink)}
+  .toolbar .spacer{flex:1}
+  .btn{
+    font-family:inherit;font-size:17.55px;font-weight:600;
+    border:1px solid var(--line);background:var(--card);color:var(--ink-soft);
+    padding:8px 16px;border-radius:10px;cursor:pointer;transition:all .15s;
+    display:inline-flex;align-items:center;gap:6px;
+  }
+  .btn:hover{border-color:var(--team-data);color:var(--team-data)}
+  .btn.active{background:var(--team-data);color:#fff;border-color:var(--team-data)}
+  .btn.save{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .btn.save:hover{background:#0d1626}
+  .edit-hint{font-size:16.2px;color:var(--muted);display:none}
+  body.editing .edit-hint{display:inline}
+  body.editing [data-edit]{outline:1.5px dashed rgba(47,109,240,.4);outline-offset:3px;border-radius:4px}
+  body.editing [data-edit]:focus{outline:2px solid var(--team-data);background:#fbfcff}
+
+  /* ===== 히어로 ===== */
+  .hero{padding:64px 0 40px;position:relative;overflow:hidden}
+  .hero .eyebrow{
+    display:inline-block;font-size:16.2px;font-weight:700;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--team-data);
+    background:var(--team-data-bg);padding:6px 14px;border-radius:999px;margin-bottom:20px;
+  }
+  .hero h1{
+    font-size:clamp(37.8px,6.08vw,62.1px);font-weight:800;line-height:1.15;
+    letter-spacing:-.03em;color:var(--ink);margin-bottom:16px;
+  }
+  .hero .sub{font-size:22.95px;color:var(--ink-soft);max-width:720px}
+  .hero .meta{
+    margin-top:24px;display:flex;flex-wrap:wrap;gap:10px;
+  }
+  .meta .chip{
+    font-size:16.92px;font-weight:600;color:var(--ink-soft);
+    background:var(--card);border:1px solid var(--line);
+    padding:7px 14px;border-radius:999px;
+  }
+  .meta .chip b{color:var(--ink)}
+
+  /* ===== 섹션 공통 ===== */
+  section{padding:44px 0}
+  .sec-head{margin-bottom:28px}
+  .sec-head .kicker{
+    font-size:16.2px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:8px;
+  }
+  .sec-head h2{font-size:35.1px;font-weight:800;letter-spacing:-.02em;color:var(--ink)}
+  .sec-head p{color:var(--ink-soft);margin-top:8px;max-width:760px}
+
+  /* ===== 업무 흐름도 ===== */
+  .flow-phase{
+    display:flex;align-items:center;gap:12px;margin:26px 0 14px;
+  }
+  .flow-phase .fp-num{
+    font-size:16.2px;font-weight:800;color:#fff;background:var(--ink);
+    width:26px;height:26px;border-radius:8px;display:grid;place-items:center;flex-shrink:0;
+  }
+  .flow-phase .fp-txt{font-size:18.9px;font-weight:800;color:var(--ink);letter-spacing:-.01em}
+  .flow-phase .fp-rule{flex:1;height:1px;background:var(--line)}
+
+  .flow-row{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .flow-card{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:16px 18px;position:relative;cursor:pointer;overflow:hidden;
+    transition:transform .16s,box-shadow .16s,border-color .16s;
+  }
+  .flow-card::before{content:"";position:absolute;top:0;left:0;bottom:0;width:4px}
+  .flow-card.c-data::before{background:var(--team-data)}
+  .flow-card.c-strat::before{background:var(--team-strat)}
+  .flow-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--ink-soft)}
+  .flow-card.full{grid-column:1/3}
+  .flow-card.tint-strat{background:var(--team-strat-bg);border-color:#cdeae1}
+  .flow-card .fc-no{font-size:18.9px;font-weight:800;letter-spacing:-.01em;margin-bottom:5px}
+  .flow-card.c-data .fc-no{color:var(--team-data)}
+  .flow-card.c-strat .fc-no{color:var(--team-strat)}
+  .flow-card .fc-lines{font-size:16.92px;color:var(--ink-soft);line-height:1.5}
+  .flow-card .fc-lines b{color:var(--ink);font-weight:700}
+  .flow-card .fc-owner{
+    position:absolute;top:14px;right:14px;font-size:13.5px;font-weight:700;
+    padding:3px 8px;border-radius:6px;
+  }
+  .flow-card.c-data .fc-owner{background:var(--team-data-bg);color:var(--team-data)}
+  .flow-card.c-strat .fc-owner{background:#d6efe7;color:var(--team-strat)}
+
+  .flow-arrows{display:grid;grid-template-columns:1fr 1fr;gap:20px;height:26px}
+  .flow-arrows.single{grid-template-columns:1fr}
+  .flow-arrows .ar{display:flex;justify-content:center;align-items:center;color:#b6c0cf}
+  .flow-arrows .ar svg{width:16px;height:26px}
+  .flow-pill{
+    background:var(--team-strat-bg);border:1px solid #cdeae1;border-radius:999px;
+    padding:14px 22px;font-size:17.55px;color:var(--ink);cursor:pointer;
+    display:flex;align-items:center;gap:10px;transition:transform .16s,box-shadow .16s;
+  }
+  .flow-pill:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+  .flow-pill .pill-no{font-weight:800;color:var(--team-strat)}
+  .flow-pill b{color:var(--ink);font-weight:700}
+  .flow-hint{font-size:16.92px;color:var(--muted);margin-top:16px;text-align:center}
+
+  /* ===== 업무 점검 체크박스 ===== */
+  .check-progress{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:4px 0 26px}
+  .cp-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .cp-label{font-weight:800;color:var(--ink);font-size:16.92px}
+  .cp-count{color:var(--ink-soft);font-size:16.2px}
+  .cp-count b{color:#16a34a;font-weight:800}
+  .cp-reset{margin-left:auto;font-family:inherit;font-size:14.85px;font-weight:600;border:1px solid var(--line);background:#fff;color:var(--ink-soft);padding:6px 12px;border-radius:8px;cursor:pointer;transition:all .15s}
+  .cp-reset:hover{border-color:var(--ink-soft);color:var(--ink)}
+  .cp-bar{height:10px;background:var(--bg);border-radius:999px;margin-top:12px;overflow:hidden}
+  .cp-fill{height:100%;width:0;background:linear-gradient(90deg,#16a34a,#22c55e);border-radius:999px;transition:width .35s ease}
+  .fc-check{
+    position:absolute;top:12px;right:12px;width:26px;height:26px;
+    border:2px solid var(--line);background:#fff;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;
+    padding:0;cursor:pointer;z-index:2;transition:all .15s;
+  }
+  .fc-check svg{width:15px;height:15px;color:#fff;opacity:0;transform:scale(.4);transition:all .15s}
+  .fc-check:hover{border-color:#16a34a}
+  .flow-card .fc-no{padding-right:34px}
+  .flow-card.done{background:#f0fdf4;border-color:#bbf7d0}
+  .flow-card.done::before{background:#16a34a}
+  .flow-card.done .fc-check{background:#16a34a;border-color:#16a34a}
+  .flow-card.done .fc-check svg{opacity:1;transform:scale(1)}
+  .flow-pill{position:relative}
+  .flow-pill .fc-check{position:static;margin-left:auto;flex-shrink:0}
+  .flow-pill.done{background:#f0fdf4;border-color:#bbf7d0}
+  .flow-pill.done .fc-check{background:#16a34a;border-color:#16a34a}
+  .flow-pill.done .fc-check svg{opacity:1;transform:scale(1)}
+
+  /* ===== 코멘트 기능 ===== */
+  .fc-comment{
+    position:absolute;top:12px;right:48px;width:26px;height:26px;
+    border:2px solid var(--line);background:#fff;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;
+    padding:0;cursor:pointer;z-index:2;transition:all .15s;color:var(--muted);
+  }
+  .fc-comment svg{width:15px;height:15px}
+  .fc-comment:hover{border-color:#d97706;color:#d97706}
+  .fc-comment.has{border-color:#f59e0b;background:#fffbeb;color:#d97706}
+  .fc-comment .cbadge{
+    position:absolute;top:-7px;right:-7px;min-width:17px;height:17px;padding:0 4px;
+    background:#f59e0b;color:#fff;border-radius:999px;font-size:11px;font-weight:800;
+    display:flex;align-items:center;justify-content:center;line-height:1;box-shadow:0 0 0 2px #fff;
+  }
+  .flow-pill .fc-comment{position:static;margin-left:8px;flex-shrink:0}
+  .flow-card .fc-no{padding-right:84px}
+
+  /* 코멘트 모아보기 패널 */
+  .cmt-panel{background:var(--card);border:1px solid var(--line);border-radius:12px;margin:0 0 26px;overflow:hidden}
+  .cmt-phead{display:flex;align-items:center;gap:10px;padding:14px 18px;cursor:pointer;user-select:none}
+  .cmt-phead .cph-title{font-weight:800;color:var(--ink);font-size:16.92px}
+  .cmt-phead .cph-count{background:#fffbeb;color:#d97706;font-weight:800;font-size:14px;border:1px solid #fde68a;border-radius:999px;padding:1px 9px}
+  .cmt-phead .cph-arrow{margin-left:auto;color:var(--muted);transition:transform .2s;font-size:14px}
+  .cmt-panel.open .cph-arrow{transform:rotate(180deg)}
+  .cmt-pbody{display:none;border-top:1px solid var(--line);padding:16px 18px}
+  .cmt-panel.open .cmt-pbody{display:block}
+  .cmt-author{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+  .cmt-author label{font-size:15px;font-weight:700;color:var(--ink-soft)}
+  .cmt-author input{font-family:inherit;font-size:15px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;min-width:180px;color:var(--ink)}
+  .cmt-author input:focus{outline:2px solid var(--team-data);border-color:var(--team-data)}
+  .cmt-author-modal{margin-bottom:10px}
+  .cmt-list-all{display:flex;flex-direction:column;gap:10px}
+  .cmt-group-title{font-size:14.5px;font-weight:800;color:var(--ink);margin:6px 0 2px}
+  .cmt-empty{color:var(--muted);font-size:15px;line-height:1.5}
+
+  /* 코멘트 항목 (모아보기·모달 공용) */
+  .cmt-item{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 12px}
+  .cmt-item.resolved{background:#f6f7f9;border-color:var(--line);opacity:.8}
+  .cmt-item .ci-meta{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--muted);margin-bottom:5px;flex-wrap:wrap}
+  .cmt-item .ci-author{font-weight:800;color:#b45309}
+  .cmt-item.resolved .ci-author{color:var(--ink-soft)}
+  .cmt-item .ci-text{font-size:15.5px;color:var(--ink);line-height:1.5;white-space:pre-wrap;word-break:break-word}
+  .cmt-item.resolved .ci-text{text-decoration:line-through;color:var(--muted)}
+  .cmt-item .ci-actions{display:flex;gap:8px;margin-top:8px}
+  .cmt-item .ci-btn{font-family:inherit;font-size:13px;font-weight:700;border:1px solid var(--line);background:#fff;color:var(--ink-soft);padding:4px 10px;border-radius:7px;cursor:pointer;transition:all .15s}
+  .cmt-item .ci-btn:hover{border-color:var(--ink-soft);color:var(--ink)}
+  .cmt-item .ci-btn.danger:hover{border-color:#dc2626;color:#dc2626}
+  .cmt-jump{font-size:13px;color:var(--team-data);font-weight:700;cursor:pointer;background:none;border:none;padding:0;margin-left:auto}
+
+  /* 코멘트 모달 */
+  .cmt-box{
+    background:var(--card);border-radius:16px;width:100%;max-width:560px;
+    position:relative;box-shadow:0 20px 60px rgba(16,23,36,.3);
+    animation:boxIn .28s cubic-bezier(.2,.7,.3,1);
+  }
+  .cmt-mhead{padding:22px 24px 14px;border-bottom:1px solid var(--line)}
+  .cmt-mkicker{font-size:13.5px;font-weight:800;letter-spacing:.08em;color:#d97706}
+  .cmt-mtitle{font-size:19px;font-weight:800;color:var(--ink);margin-top:4px;padding-right:40px}
+  .cmt-mlist{padding:16px 24px;max-height:44vh;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+  .cmt-mfoot{padding:14px 24px 22px;border-top:1px solid var(--line)}
+  .cmt-mfoot textarea{width:100%;font-family:inherit;font-size:15.5px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;resize:vertical;min-height:64px;color:var(--ink);box-sizing:border-box}
+  .cmt-mfoot textarea:focus{outline:2px solid #f59e0b;border-color:#f59e0b}
+  .cmt-add{margin-top:10px;font-family:inherit;font-size:15px;font-weight:700;background:#f59e0b;color:#fff;border:none;padding:9px 18px;border-radius:9px;cursor:pointer;transition:all .15s}
+  .cmt-add:hover{background:#d97706}
+  .cmt-foot-note{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.4}
+
+  /* ===== STEP 상세 모달 ===== */
+  .modal-overlay{
+    position:fixed;inset:0;z-index:200;background:rgba(16,23,36,.5);
+    backdrop-filter:blur(3px);display:none;align-items:flex-start;justify-content:center;
+    padding:48px 20px;overflow-y:auto;
+  }
+  .modal-overlay.open{display:flex;animation:ovIn .2s ease}
+  @keyframes ovIn{from{opacity:0}to{opacity:1}}
+  .modal-box{
+    background:var(--card);border-radius:16px;width:100%;max-width:900px;
+    position:relative;box-shadow:0 20px 60px rgba(16,23,36,.3);
+    animation:boxIn .28s cubic-bezier(.2,.7,.3,1);
+  }
+  @keyframes boxIn{from{opacity:0;transform:translateY(20px) scale(.98)}to{opacity:1;transform:none}}
+  .modal-close{
+    position:absolute;top:16px;right:16px;z-index:2;
+    width:34px;height:34px;border-radius:9px;border:1px solid var(--line);
+    background:var(--card);color:var(--ink-soft);font-size:20.25px;cursor:pointer;
+    display:grid;place-items:center;transition:all .15s;
+  }
+  .modal-close:hover{background:var(--bg);color:var(--ink);border-color:var(--ink-soft)}
+  .modal-content .panel{display:block;box-shadow:none;border:none;border-radius:16px 16px 0 0;animation:none}
+  .modal-nav{display:flex;justify-content:space-between;gap:12px;padding:0 28px 24px}
+  .nav-btn{
+    font-family:inherit;font-size:17.55px;font-weight:600;cursor:pointer;
+    background:var(--card);border:1px solid var(--line);color:var(--ink-soft);
+    padding:10px 18px;border-radius:10px;transition:all .15s;
+  }
+  .nav-btn:hover:not(:disabled){border-color:var(--ink);color:var(--ink)}
+  .nav-btn:disabled{opacity:.35;cursor:default}
+  /* ===== 모달 내용 편집 ===== */
+  .modal-editbar{display:flex;align-items:center;gap:12px;padding:4px 28px 14px}
+  .modal-edit-hint{font-size:16.2px;color:var(--muted);display:none}
+  .modal-content.editing ~ .modal-editbar .modal-edit-hint{display:inline}
+  #modalEditBtn.active{background:var(--team-data);color:#fff;border-color:var(--team-data)}
+  #modalEditBtn.active:hover{color:#fff}
+  .modal-content.editing [data-edit]{outline:1.5px dashed rgba(47,109,240,.4);outline-offset:3px;border-radius:4px}
+  .modal-content.editing [data-edit]:focus{outline:2px solid var(--team-data);background:#fbfcff}
+  .flow-card::after{
+    content:"자세히 ›";position:absolute;bottom:12px;right:14px;
+    font-size:14.85px;font-weight:700;color:var(--muted);opacity:0;transition:opacity .16s;
+  }
+  .flow-card:hover::after{opacity:1}
+
+  /* ===== 요약 두 컬럼 (논문/특허) ===== */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .domain{
+    background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+    overflow:hidden;border:1px solid var(--line);
+  }
+  .domain-top{padding:22px 24px 18px;border-bottom:1px solid var(--line)}
+  .domain.paper .domain-top{border-top:4px solid var(--paper)}
+  .domain.patent .domain-top{border-top:4px solid var(--patent)}
+  .domain-top .tag{
+    font-size:16.2px;font-weight:700;letter-spacing:.05em;padding:4px 12px;border-radius:999px;color:#fff;
+  }
+  .domain.paper .tag{background:var(--paper)}
+  .domain.patent .tag{background:var(--patent)}
+  .domain-top h3{font-size:25.65px;font-weight:800;margin:12px 0 6px;color:var(--ink)}
+  .domain-top .goal{font-size:18.9px;color:var(--ink-soft)}
+  .domain-body{padding:8px 24px 22px}
+  .field{padding:14px 0;border-bottom:1px solid var(--line)}
+  .field:last-child{border-bottom:none}
+  .field .label{
+    font-size:15.48px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:6px;
+  }
+  .field .val{font-size:18.9px;color:var(--ink);line-height:1.6}
+  .field .val ul{list-style:none;padding:0}
+  .field .val li{position:relative;padding-left:16px;margin:4px 0}
+  .field .val li::before{
+    content:"";position:absolute;left:2px;top:9px;width:5px;height:5px;border-radius:50%;
+  }
+  .domain.paper .field .val li::before{background:var(--paper)}
+  .domain.patent .field .val li::before{background:var(--patent)}
+  .field .val b{font-weight:700}
+
+  /* ===== 팀 역할 카드 ===== */
+  .teams{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .team-card{
+    background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+    padding:24px;border:1px solid var(--line);position:relative;overflow:hidden;
+    cursor:pointer;transition:transform .2s,box-shadow .2s;
+  }
+  .team-card::before{content:"";position:absolute;inset:0 auto 0 0;width:5px}
+  .team-card.data::before{background:var(--team-data)}
+  .team-card.strat::before{background:var(--team-strat)}
+  .team-card.ai::before{background:var(--team-ai)}
+  .team-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(22,35,58,.12)}
+  .team-card.dim{opacity:.4}
+  .team-card .dot{width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:8px;vertical-align:middle}
+  .team-card.data .dot{background:var(--team-data)}
+  .team-card.strat .dot{background:var(--team-strat)}
+  .team-card.ai .dot{background:var(--team-ai)}
+  .team-card h4{font-size:22.95px;font-weight:800;color:var(--ink);display:flex;align-items:center;margin-bottom:4px}
+  .team-card .role{font-size:17.55px;color:var(--muted);margin-bottom:14px;font-weight:600}
+  .team-card .desc{font-size:18.18px;color:var(--ink-soft);line-height:1.6}
+  .team-card .steps-owned{margin-top:16px;display:flex;flex-wrap:wrap;gap:6px}
+  .team-card .st-badge{
+    font-size:14.85px;font-weight:700;padding:4px 9px;border-radius:8px;
+    background:var(--bg);color:var(--ink-soft);
+  }
+  .team-card.data .st-badge{background:var(--team-data-bg);color:var(--team-data)}
+  .team-card.strat .st-badge{background:var(--team-strat-bg);color:var(--team-strat)}
+  .team-card.ai .st-badge{background:var(--team-ai-bg);color:var(--team-ai)}
+  .filter-note{font-size:17.55px;color:var(--muted);margin-top:16px;text-align:center}
+
+  /* ===== STEP 탭 방식 ===== */
+  .step-tabs{
+    display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin-bottom:8px;
+  }
+  .tab-btn{
+    position:relative;font-family:inherit;cursor:pointer;text-align:left;
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:14px 12px 13px;transition:all .18s;overflow:hidden;
+  }
+  .tab-btn::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--line)}
+  .tab-btn.t-data::before{background:var(--team-data)}
+  .tab-btn.t-strat::before{background:var(--team-strat)}
+  .tab-btn.t-ai::before{background:var(--team-ai)}
+  .tab-btn .tb-no{font-size:14.85px;font-weight:800;letter-spacing:.08em;color:var(--muted)}
+  .tab-btn .tb-title{font-size:16.92px;font-weight:700;color:var(--ink-soft);margin-top:5px;line-height:1.35}
+  .tab-btn:hover{border-color:var(--ink-soft);transform:translateY(-2px)}
+  .tab-btn.active{border-color:transparent;box-shadow:0 6px 18px rgba(22,35,58,.14)}
+  .tab-btn.active.t-data{background:var(--team-data);}
+  .tab-btn.active.t-strat{background:var(--team-strat);}
+  .tab-btn.active.t-ai{background:var(--team-ai);}
+  .tab-btn.active .tb-no,.tab-btn.active .tb-title{color:#fff}
+  .tab-btn.active::before{opacity:0}
+  .tab-btn.faded{opacity:.35}
+
+  .phase-strip{
+    display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin-bottom:18px;
+  }
+  .phase-seg{
+    font-size:14.22px;font-weight:700;letter-spacing:.02em;color:var(--muted);
+    text-align:center;padding-top:4px;border-top:1px solid var(--line);
+  }
+
+  /* 상세 패널 */
+  .panel-stage{position:relative;min-height:340px}
+  .panel{
+    display:none;background:var(--card);border-radius:var(--radius);
+    box-shadow:var(--shadow);border:1px solid var(--line);overflow:hidden;
+    animation:panelIn .35s ease;
+  }
+  .panel.active{display:block}
+  /* 편집 모드: 편집 영역(stepSource)의 STEP 1~8 패널을 모두 펼쳐 편집 가능하게 함 */
+  body.editing #stepSource .panel{display:block;margin:0 24px 22px}
+  @keyframes panelIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .panel-head{display:flex;align-items:center;gap:20px;padding:24px 28px;border-bottom:1px solid var(--line)}
+  .panel.owner-data .panel-head{border-top:5px solid var(--team-data)}
+  .panel.owner-strat .panel-head{border-top:5px solid var(--team-strat)}
+  .panel.owner-ai .panel-head{border-top:5px solid var(--team-ai)}
+  .panel-no{
+    flex-shrink:0;width:64px;height:64px;border-radius:14px;color:#fff;
+    display:grid;place-items:center;font-size:32.4px;font-weight:800;position:relative;
+  }
+  .panel.owner-data .panel-no{background:var(--team-data)}
+  .panel.owner-strat .panel-no{background:var(--team-strat)}
+  .panel.owner-ai .panel-no{background:var(--team-ai)}
+  .panel-no small{position:absolute;top:9px;font-size:12.15px;font-weight:700;opacity:.85;letter-spacing:.1em}
+  .panel-head .ph-main{flex:1;min-width:0}
+  .panel-head .ph-title{font-size:27px;font-weight:800;color:var(--ink);letter-spacing:-.01em}
+  .panel-head .ph-when{font-size:17.55px;color:var(--muted);font-weight:600;margin-top:3px}
+  .panel-head .ph-teams{display:flex;gap:7px;flex-shrink:0}
+  .role-badge{
+    font-size:15.48px;font-weight:700;padding:6px 11px;border-radius:9px;white-space:nowrap;
+    display:inline-flex;align-items:center;gap:5px;
+  }
+  .role-badge .lead{font-size:12.15px;opacity:.7}
+  .rb-data{background:var(--team-data-bg);color:var(--team-data)}
+  .rb-strat{background:var(--team-strat-bg);color:var(--team-strat)}
+  .rb-ai{background:var(--team-ai-bg);color:var(--team-ai)}
+  .role-badge.support{opacity:.75}
+
+  .panel-body{padding:24px 28px 28px}
+  .st-cols{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .st-col{background:var(--bg);border-radius:12px;padding:18px 20px}
+  .st-col .dh{font-size:16.92px;font-weight:800;letter-spacing:.04em;margin-bottom:12px;display:flex;align-items:center;gap:7px}
+  .st-col.paper .dh{color:var(--paper)}
+  .st-col.patent .dh{color:var(--patent)}
+  .st-col .dh .pd{width:9px;height:9px;border-radius:2px}
+  .st-col.paper .dh .pd{background:var(--paper)}
+  .st-col.patent .dh .pd{background:var(--patent)}
+  .st-col ul{list-style:none}
+  .st-col li{position:relative;padding-left:16px;font-size:18.9px;color:var(--ink-soft);margin:7px 0;line-height:1.6}
+  .st-col li::before{content:"";position:absolute;left:2px;top:9px;width:5px;height:5px;border-radius:50%;background:var(--muted)}
+  .st-col li b{color:var(--ink);font-weight:700}
+  .st-single{background:var(--bg);border-radius:12px;padding:18px 20px;font-size:18.9px;color:var(--ink-soft);line-height:1.65}
+  .st-single b{color:var(--ink)}
+  .collab-line{
+    margin-top:16px;font-size:17.55px;color:var(--muted);
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  }
+  .panel-nav{display:flex;justify-content:space-between;margin-top:20px;gap:12px}
+  .nav-btn{
+    font-family:inherit;font-size:17.55px;font-weight:600;cursor:pointer;
+    background:var(--card);border:1px solid var(--line);color:var(--ink-soft);
+    padding:10px 18px;border-radius:10px;transition:all .15s;
+  }
+  .nav-btn:hover:not(:disabled){border-color:var(--ink);color:var(--ink)}
+  .nav-btn:disabled{opacity:.35;cursor:default}
+
+  /* ===== 하단 노트 ===== */
+  .note-box{
+    background:linear-gradient(180deg,#fff,#fafbfd);border:1px solid var(--line);
+    border-radius:var(--radius);padding:26px 28px;box-shadow:var(--shadow);
+  }
+  .note-box h3{font-size:22.95px;font-weight:800;margin-bottom:12px;color:var(--ink)}
+  .note-box p{font-size:18.9px;color:var(--ink-soft);margin-bottom:10px}
+  .note-box p:last-child{margin-bottom:0}
+
+  footer{padding:40px 0 60px;text-align:center;color:var(--muted);font-size:16.92px}
+
+  /* ===== 반응형 ===== */
+  @media(max-width:860px){
+    .grid2,.teams,.st-cols{grid-template-columns:1fr}
+    .step-tabs{grid-template-columns:repeat(4,1fr)}
+    .phase-strip{display:none}
+    .panel-head{flex-wrap:wrap;gap:14px}
+    .panel-head .ph-teams{width:100%}
+    .flow-row{grid-template-columns:1fr}
+    .flow-card.full{grid-column:1/2}
+    .flow-arrows{grid-template-columns:1fr}
+    .flow-arrows .ar:last-child{display:none}
+  }
+  @media(max-width:520px){
+    .step-tabs{grid-template-columns:repeat(2,1fr)}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .panel{animation:none}
+    html{scroll-behavior:auto}
+  }
+</style>
+</head>
+<body class="" style="">
+
+<!-- ===== 편집 툴바 ===== -->
+<div class="toolbar">
+  <span class="brand">KRD 성과관리시스템 구축 계획</span>
+  <span class="edit-hint">편집 모드 · 텍스트를 클릭해 바로 수정하세요</span>
+  <span class="spacer"></span>
+  <button class="btn" id="editBtn"><span>✎</span> 편집 모드</button>
+  <button class="btn save" id="saveBtn"><span>↓</span> HTML 저장</button>
+</div>
+
+<!-- ===== 히어로 ===== -->
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow" data-edit="">25년 경영평가 계량평가 대응</span>
+    <h1 data-edit="">경평 계량평가 대응을 위한<br>KRD 성과관리시스템 구축(안)</h1>
+    <p class="sub" data-edit="">재단 조사데이터 통합시스템(KRD)에 외부 DB(WoS · KIPRIS+)를 Open API로 연계하여, 담당자 수기·크롤링에 의존하던 성과 추출을 자동화하고 산출의 일관성·재현가능성을 확보한다.</p>
+    <div class="meta">
+      <span class="chip" data-edit="">구축 시점 <b>’26 하반기</b></span>
+      <span class="chip" data-edit="">대상 지표 <b>논문 · 특허</b></span>
+      <span class="chip" data-edit="">협업 <b>3개 팀</b></span>
+      <span class="chip" data-edit="">전체 <b>8 STEP</b></span>
+    </div>
+  </div>
+</header>
+
+<!-- ===== 업무 흐름도 (최상단) ===== -->
+<section id="flow">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">한눈에 보기</div>
+      <h2 data-edit="">구축 업무 흐름도 — 8 STEP</h2>
+      <p data-edit="">준비 → 데이터 수집 → 매칭·산출 → 검증·고도화의 순서로 진행하며, 논문·특허가 병렬로 흐른다. 각 카드를 클릭하면 해당 STEP의 상세 과업과 담당 역할이 팝업으로 표시된다.</p>
+    </div>
+
+    <!-- 업무 점검 진행률 -->
+    <div class="check-progress" id="checkProgress">
+      <div class="cp-top">
+        <span class="cp-label">업무 점검 진행률</span>
+        <span class="cp-count"><b id="cpDone">0</b> / <span id="cpTotal">13</span> 완료</span>
+        <button class="cp-reset" id="cpReset" type="button">전체 해제</button>
+      </div>
+      <div class="cp-bar"><div class="cp-fill" id="cpFill" style="width: 0%;"></div></div>
+    </div>
+
+    <!-- 코멘트 모아보기 -->
+    <div class="cmt-panel open" id="cmtPanel">
+      <div class="cmt-phead" id="cmtPanelHead">
+        <span class="cph-title">코멘트 모아보기</span>
+        <span class="cph-count" id="cmtTotalCount">12</span>
+        <span class="cph-arrow">▾</span>
+      </div>
+      <div class="cmt-pbody">
+        <div class="cmt-author">
+          <label for="authorName">작성자</label>
+          <input type="text" id="authorName" placeholder="이름 입력 (코멘트에 표시됨)" maxlength="20">
+        </div>
+        <div class="cmt-list-all" id="cmtListAll"><div class="cmt-group-title">STEP 1. 수집조건 · 지표 · 사사판정 기준 확정</div><div class="cmt-item"><div class="ci-meta"><span class="ci-author">송병철</span><span>26.09.04 10:15</span><button class="cmt-jump" data-act="jump" data-cid="c0">해당 카드 ›</button></div><div class="ci-text">@이수진 연구원님
+ - 제외사업 엑셀(유형, 사업명) 기준 수립 및 과거 특허 매칭 방식 결과 파일 공유해주시면 감사하겠습니다.</div><div class="ci-actions"><button class="ci-btn" data-act="resolve" data-cid="c0" data-id="m1788484521868821">해결</button><button class="ci-btn danger" data-act="delete" data-cid="c0" data-id="m1788484521868821">삭제</button></div></div><div class="cmt-group-title">STEP 2. WoS API 연계</div><div class="cmt-item"><div class="ci-meta"><span class="ci-author">송병철</span><span>26.09.04 10:16</span><button class="cmt-jump" data-act="jump" data-cid="c1">해당 카드 ›</button></div><div class="ci-text">2024년 논문 서지 정보 수집 완료(Test용)
+- 2024년으로 Step 2- Step 5 진행(추후 다운로드 시점 결정)</div><div class="ci-actions"><button class="ci-btn" data-act="resolve" data-cid="c1" data-id="m1788484591746549">해결</button><button class="ci-btn danger" data-act="delete" data-cid="c1" data-id="m1788484591746549">삭제</button></div></div><div class="cmt-group-title">STEP 2. KIPRIS+ API 연계</div><div class="cmt-item"><div class="ci-meta"><span class="ci-author">김영은</span><span>26.09.22 14:15</span><button class="cmt-jump" data-act="jump" data-cid="c2">해당 카드 ›</button></div><div class="ci-text">[향후 과제] 특허 API 테스트 착수
+- 사업명·과제명·과제번호 등 기준별 조회·조인 결과 비교
+- 대량 데이터 처리를 위해 개발용 PC 활용 검토</div><div class="ci-actions"><button class="ci-btn" data-act="resolve" data-cid="c2" data-id="m1790054152910123">해결</button><button class="ci-btn danger" data-act="delete" data-cid="c2" data-id="m1790054152910123">삭제</button></div></div><div class="cmt-group-title">STEP 3. 논문 수집</div><div class="cmt-item"><div class="ci-meta"><span class="ci-author">송병철</span><span>26.09.04 10:16</span><button class="cmt-jump" data-act="jump" data-cid="c3">해당 카드 ›</button></div><div class="ci-text">2024년 논문 서지 정보 수집 완료(Test용)
+- 2024년으로 Step 2- Step 5 진행(추후 다운로드 시점 결정)</div><div class="ci-actions"><button class="ci-btn" data-act="resolve" data-cid="c3" data-id="m178848459689612">해결</button><button class="ci-btn danger" data-act="delete" data-cid="c3" data-id="m178848459689612">삭제</button></div></div><div class="cmt-item"><div class="ci-meta"><span class="ci-author">김영은</span><span>26.09.22 14:08</span><button class="cmt-jump" data-act="jump" data-cid="c3">해당 카드 ›</button></div><div class="ci-text">[완료] 2024년 논문 34,279건 수집 및 테스트 완료
+
+SCIE·SSCI·A&amp;HCI 포함
+실제 WoS 출판연도를 기준으로 성과연도 재분류
+- 2024년 30,793건, 2025년 3,427건, 기타 59건
+
+[향후 과제] 전체 대상연도 수집시점 및 연도별 확정값 관리방식 결정
+- 매년 경영평가가 종료되면 해당 연도 이전 데이터는 확정값으로 고정함.
+- 미래 연도 데이터가 함께 조회되는 경우에는 해당 연도 처리 시점까지 보류함.</div><div class="ci-actions"><button class="ci-btn" data-act="resolve" data-cid="c3" data-id="m179005369827382">해결</button><button class="ci-btn danger" data-act="delete" data-cid="c3" data-id="m179005369827382">삭제</button></div></div><div class="cmt-group-title">STEP 3. 특허 bulk 수집</div><div class="cmt-item"><div class="ci-meta"><span class="ci-author">김영은</span><span>26.09.22 14:15</span><button class="cmt-jump" data-act="jump" data-cid="c4">해당 카드 ›</button></div><div class="ci-text">[향후 과제] 특허 수집·매칭 기준 확정 후 테스트 진행
+- 2024년·2025년 4분기 등 표본기간 우선 비교
+- 10월 초 시뮬레이션 추진</div><div class="ci-actions"><button class="ci-btn" data-act="resolve" data-cid="c4" data-id="m1790054132218217">해결</button><button class="ci-btn danger" data-act="delete" data-cid="c4" data-id="m1790054132218217">삭제</button></div></div><div class="cmt-group-title">STEP 4. 과제번호 및 저자매칭</div><div class="cmt-item"><div class="ci-meta"><span class="ci-author">송병철</span><span>26.09.04 10:18</span><button class="cmt-jump" data-act="jump" data-cid="c5">해당 카드 ›</button></div><div class="ci-text">권은화 과장님이 보낸 ★과제_마스터 과제 정보로 매칭중(추후 매칭율 검토 후 AI정보혁신총괄팀과 협의 후 과제 DB 요청 예정)</div><div class="ci-actions"><button class="ci-btn" data-act="resolve" data-cid="c5" data-id="m178848469118195">해결</button><button class="ci-btn danger" data-act="delete" data-cid="c5" data-id="m178848469118195">삭제</button></div></div><div class="cmt-item"><div class="ci-meta"><span class="ci-author">정형상</span><span>26.09.04 15:21</span><button class="cmt-jump" data-act="jump" data-cid="c5">해당 카드 ›</button></div><div class="ci-text">1.  '알고리즘으로 분류' 코드 개발 중
+2.  '로컬 LLM으로 분류' 코드 개발 중
+  - 로컬 LLM: QWen3.6-35B 모델 설치 완료</div><div class="ci-actions"><button class="ci-btn" data-act="resolve" data-cid="c5" data-id="m1788502905359192">해결</button><button class="ci-btn danger" data-act="delete" data-cid="c5" data-id="m1788502905359192">삭제</button></div></div><div class="cmt-item"><div class="ci-meta"><span class="ci-author">김영은</span><span>26.09.22 14:27</span><button class="cmt-jump" data-act="jump" data-cid="c5">해당 카드 ›</button></div><div class="ci-text">[진행 현황] 2024년 수집 논문 34,279편을 대상으로 과제번호 매칭 수행
+- 과제 매칭 논문 29,726편, 미매칭 논문 4,553편
+- 복수 과제 연결을 포함한 논문–과제 매핑 약 4.8만 건 생성
+
+[향후 과제] 과제번호 미매칭 논문 4,553편의 누락률 개선
+- 공백·하이픈·특수문자 및 단계·연차번호 차이 확인
+- e-R&amp;D·IRIS 이관 전후 과제번호 추가 확보
+- 통합 과제DB를 활용한 부분일치 및 역추적 매칭 검토</div><div class="ci-actions"><button class="ci-btn" data-act="resolve" data-cid="c5" data-id="m1790054840333436">해결</button><button class="ci-btn danger" data-act="delete" data-cid="c5" data-id="m1790054840333436">삭제</button></div></div><div class="cmt-item"><div class="ci-meta"><span class="ci-author">김영은</span><span>26.09.22 14:28</span><button class="cmt-jump" data-act="jump" data-cid="c5">해당 카드 ›</button></div><div class="ci-text">[진행 현황] 규칙 기반 1차 매칭 및 LM 2차 검증을 통해 논문 저자–과제 참여연구원 매칭 수행
+- 기존 수작업 결과와 비교 가능한 25,359건 중 약 21,800건의 참여율 산출값 일치
+- 신규 산출값이 높은 2,980건, 낮은 576건 확인
+
+[향후 과제] 저자 매칭 결과의 정확도 검증 및 로직 보완
+- 신규 산출값이 높은 2,980건 표본검증
+- 신규 산출값이 낮은 건 중 오류 추정 약 40건 재점검
+- 영문명 표준화 규칙의 정확도 확인
+- 추가 판단 모델 테스트</div><div class="ci-actions"><button class="ci-btn" data-act="resolve" data-cid="c5" data-id="m1790054888101844">해결</button><button class="ci-btn danger" data-act="delete" data-cid="c5" data-id="m1790054888101844">삭제</button></div></div><div class="cmt-group-title">STEP 4. 특허등록 매칭</div><div class="cmt-item"><div class="ci-meta"><span class="ci-author">김영은</span><span>26.09.22 14:16</span><button class="cmt-jump" data-act="jump" data-cid="c6">해당 카드 ›</button></div><div class="ci-text">[향후 과제] 사업명·과제명·과제번호 기준을 각각 적용하여 결과 비교
+- 기준별 결과와 원데이터를 표본검토한 후 최종 매칭 기준 선정</div><div class="ci-actions"><button class="ci-btn" data-act="resolve" data-cid="c6" data-id="m1790054176077743">해결</button><button class="ci-btn danger" data-act="delete" data-cid="c6" data-id="m1790054176077743">삭제</button></div></div><div class="cmt-group-title">STEP 5. 저자명 매칭 판단</div><div class="cmt-item"><div class="ci-meta"><span class="ci-author">송병철</span><span>26.09.22 14:57</span><button class="cmt-jump" data-act="jump" data-cid="c7">해당 카드 ›</button></div><div class="ci-text">핵심 이슈★ &lt;과제번호&gt;
+미매칭된 4,553편 과제번호 매칭율 높일 수 있는 방안 검토
+ 1. 3,254편 (사사에 재단 과제번호가 없는 논문) --&gt; IRIS, 조분평 데이터에서 역추적
+ 2. 1,299편 (과제번호 오류 등)
+- 과제번호 매칭율, 저자 매칭율 등으로 과제번호 매칭율 UP↑
+
+핵심 이슈★ &lt;저자명&gt;
+신규 v.1.0의 신규 산출값 높은 2,980건에 대한 모델 검증</div><div class="ci-actions"><button class="ci-btn" data-act="resolve" data-cid="c7" data-id="m1790056673937660">해결</button><button class="ci-btn danger" data-act="delete" data-cid="c7" data-id="m1790056673937660">삭제</button></div></div></div>
+      </div>
+    </div>
+
+    <!-- 1단계 -->
+    <div class="flow-phase"><span class="fp-num">1</span><span class="fp-txt" data-edit="">설계 · 기준 확정</span><span class="fp-rule"></span></div>
+    <div class="flow-row">
+      <div class="flow-card full tint-strat c-strat" data-goto="1" style="opacity: 1;" data-cid="c0">
+        <div class="fc-no" data-edit="">STEP 1. 수집조건 · 지표 · 사사판정 기준 확정</div>
+        <div class="fc-lines" data-edit="">API DB, 검색조건 확정, 수집 범위 확정, API 활용 항목 정의</div>
+      <button type="button" class="fc-check" aria-label="점검 완료 체크" aria-checked="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 L9 17 L4 12"></path></svg></button><button type="button" class="fc-comment has" aria-label="코멘트"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.6-.8L3 21l1.9-5.7A8.38 8.38 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5z"></path></svg><span class="cbadge">1</span></button></div>
+    </div>
+    <div class="flow-arrows single"><span class="ar"><svg viewBox="0 0 16 26"><line x1="8" y1="0" x2="8" y2="20" stroke="currentColor" stroke-width="1.5"></line><path d="M3 15 L8 22 L13 15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></div>
+
+    <!-- 2단계 -->
+    <div class="flow-phase"><span class="fp-num">2</span><span class="fp-txt" data-edit="">데이터 수집 (논문 · 특허 병렬)</span><span class="fp-rule"></span></div>
+    <div class="flow-row">
+      <div class="flow-card c-data" data-goto="2" style="opacity: 1;" data-cid="c1">
+        <div class="fc-no" data-edit="">STEP 2. WoS API 연계</div>
+        <div class="fc-lines" data-edit="">Open API 연계<br>KRD 뷰테이블 구성</div>
+      <button type="button" class="fc-check" aria-label="점검 완료 체크" aria-checked="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 L9 17 L4 12"></path></svg></button><button type="button" class="fc-comment has" aria-label="코멘트"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.6-.8L3 21l1.9-5.7A8.38 8.38 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5z"></path></svg><span class="cbadge">1</span></button></div>
+      <div class="flow-card c-data" data-goto="2" style="opacity: 1;" data-cid="c2">
+        <div class="fc-no" data-edit="">STEP 2. KIPRIS+ API 연계</div>
+        <div class="fc-lines" data-edit="">등록일자 · 서지 · 패밀리<br>해외검색 오퍼레이션</div>
+      <button type="button" class="fc-check" aria-label="점검 완료 체크" aria-checked="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 L9 17 L4 12"></path></svg></button><button type="button" class="fc-comment has" aria-label="코멘트"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.6-.8L3 21l1.9-5.7A8.38 8.38 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5z"></path></svg><span class="cbadge">1</span></button></div>
+    </div>
+    <div class="flow-arrows">
+      <span class="ar"><svg viewBox="0 0 16 26"><line x1="8" y1="0" x2="8" y2="20" stroke="currentColor" stroke-width="1.5"></line><path d="M3 15 L8 22 L13 15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+      <span class="ar"><svg viewBox="0 0 16 26"><line x1="8" y1="0" x2="8" y2="20" stroke="currentColor" stroke-width="1.5"></line><path d="M3 15 L8 22 L13 15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+    </div>
+    <div class="flow-row">
+      <div class="flow-card c-data" data-goto="3" style="opacity: 1;" data-cid="c3">
+        <div class="fc-no" data-edit="">STEP 3. 논문 수집</div>
+        <div class="fc-lines" data-edit="">2021~2026 발행<br>SCIE · A&amp;HCI · SSCI</div>
+      <button type="button" class="fc-check" aria-label="점검 완료 체크" aria-checked="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 L9 17 L4 12"></path></svg></button><button type="button" class="fc-comment has" aria-label="코멘트"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.6-.8L3 21l1.9-5.7A8.38 8.38 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5z"></path></svg><span class="cbadge">2</span></button></div>
+      <div class="flow-card c-data" data-goto="3" style="opacity: 1;" data-cid="c4">
+        <div class="fc-no" data-edit="">STEP 3. 특허 bulk 수집</div>
+        <div class="fc-lines" data-edit="">2021~2026 국내등록 전체 + 해외 특허(US, EP, JP) 등록<br></div>
+      <button type="button" class="fc-check" aria-label="점검 완료 체크" aria-checked="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 L9 17 L4 12"></path></svg></button><button type="button" class="fc-comment has" aria-label="코멘트"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.6-.8L3 21l1.9-5.7A8.38 8.38 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5z"></path></svg><span class="cbadge">1</span></button></div>
+    </div>
+    <div class="flow-arrows">
+      <span class="ar"><svg viewBox="0 0 16 26"><line x1="8" y1="0" x2="8" y2="20" stroke="currentColor" stroke-width="1.5"></line><path d="M3 15 L8 22 L13 15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+      <span class="ar"><svg viewBox="0 0 16 26"><line x1="8" y1="0" x2="8" y2="20" stroke="currentColor" stroke-width="1.5"></line><path d="M3 15 L8 22 L13 15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+    </div>
+    <div class="flow-row">
+      <div class="flow-card c-strat" data-goto="4" style="opacity: 1;" data-cid="c5">
+        <div class="fc-no" data-edit="">STEP 4. 과제번호 및 저자매칭</div>
+        <div class="fc-lines" data-edit="">논문 - 재단 과제 매칭<br>논문 저자 - 참여연구원 매칭</div>
+      <button type="button" class="fc-check" aria-label="점검 완료 체크" aria-checked="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 L9 17 L4 12"></path></svg></button><button type="button" class="fc-comment has" aria-label="코멘트"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.6-.8L3 21l1.9-5.7A8.38 8.38 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5z"></path></svg><span class="cbadge">4</span></button></div>
+      <div class="flow-card c-strat" data-goto="4" style="opacity: 1;" data-cid="c6">
+        <div class="fc-no" data-edit="">STEP 4. 특허등록 매칭</div>
+        <div class="fc-lines" data-edit=""><div><span style="font-size: 16.92px;">특허 추출(재단 + 타 전문기관 포함)</span></div><div>재단 사업 매칭</div></div>
+      <button type="button" class="fc-check" aria-label="점검 완료 체크" aria-checked="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 L9 17 L4 12"></path></svg></button><button type="button" class="fc-comment has" aria-label="코멘트"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.6-.8L3 21l1.9-5.7A8.38 8.38 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5z"></path></svg><span class="cbadge">1</span></button></div>
+    </div>
+
+    <!-- 3단계 -->
+    <div class="flow-phase"><span class="fp-num">3</span><span class="fp-txt" data-edit=""><span style="font-size: 18.9px; letter-spacing: -0.189px;">★</span>핵심 매칭(STEP 4 연계) ★</span><span class="fp-rule"></span></div>
+    <div class="flow-row">
+      <div class="flow-card c-strat" data-goto="5" style="opacity: 1;" data-cid="c7">
+        <div class="fc-no" data-edit="">STEP 5. 저자명 매칭 판단</div>
+        <div class="fc-lines" data-edit="">방향1~5 매칭<br></div>
+      <button type="button" class="fc-check" aria-label="점검 완료 체크" aria-checked="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 L9 17 L4 12"></path></svg></button><button type="button" class="fc-comment has" aria-label="코멘트"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.6-.8L3 21l1.9-5.7A8.38 8.38 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5z"></path></svg><span class="cbadge">1</span></button></div>
+      <div class="flow-card c-strat" data-goto="5" style="opacity: 1;" data-cid="c8">
+        <div class="fc-no" data-edit="">STEP 5. 제외사업 · 삼극 판정 판단</div>
+        <div class="fc-lines" data-edit="">완전일치 제외사업 매칭<br>패밀리 - US · EP · JP 판정</div>
+      <button type="button" class="fc-check" aria-label="점검 완료 체크" aria-checked="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 L9 17 L4 12"></path></svg></button><button type="button" class="fc-comment" aria-label="코멘트"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.6-.8L3 21l1.9-5.7A8.38 8.38 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5z"></path></svg></button></div>
+    </div>
+    <div class="flow-arrows">
+      <span class="ar"><svg viewBox="0 0 16 26"><line x1="8" y1="0" x2="8" y2="20" stroke="currentColor" stroke-width="1.5"></line><path d="M3 15 L8 22 L13 15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+      <span class="ar"><svg viewBox="0 0 16 26"><line x1="8" y1="0" x2="8" y2="20" stroke="currentColor" stroke-width="1.5"></line><path d="M3 15 L8 22 L13 15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+    </div>
+    <div class="flow-row">
+      <div class="flow-card c-data" data-goto="6" style="opacity: 1;" data-cid="c9">
+        <div class="fc-no" data-edit="">STEP 6. 경평 산출값 도출(시뮬레이션)</div>
+        <div class="fc-lines" data-edit="">주저자 / 공동저자 구분<br>참여율 산출</div>
+      <button type="button" class="fc-check" aria-label="점검 완료 체크" aria-checked="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 L9 17 L4 12"></path></svg></button><button type="button" class="fc-comment" aria-label="코멘트"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.6-.8L3 21l1.9-5.7A8.38 8.38 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5z"></path></svg></button></div>
+      <div class="flow-card c-data" data-goto="6" style="opacity: 1;" data-cid="c10">
+        <div class="fc-no" data-edit="">STEP 6. 실적값 산출</div>
+        <div class="fc-lines" data-edit="">기여율 x 가중치<br>KR1 · US·EP·JP 2 · 삼극10</div>
+      <button type="button" class="fc-check" aria-label="점검 완료 체크" aria-checked="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 L9 17 L4 12"></path></svg></button><button type="button" class="fc-comment" aria-label="코멘트"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.6-.8L3 21l1.9-5.7A8.38 8.38 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5z"></path></svg></button></div>
+    </div>
+
+    <!-- 4단계 -->
+    <div class="flow-phase"><span class="fp-num">4</span><span class="fp-txt" data-edit="">검증 및 정확성 고도화</span><span class="fp-rule"></span></div>
+    <div class="flow-row">
+      <div class="flow-card full c-strat" data-goto="7" style="opacity: 1;" data-cid="c11">
+        <div class="fc-no" data-edit="">STEP 7. 검증 · 수기 검토 (회색구간)</div>
+        <div class="fc-lines" data-edit="">논문: 회색구간 저자명 검토  |  특허: 부분일치 제외사업 · 사사 미표기 검토</div>
+      <button type="button" class="fc-check" aria-label="점검 완료 체크" aria-checked="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 L9 17 L4 12"></path></svg></button><button type="button" class="fc-comment" aria-label="코멘트"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.6-.8L3 21l1.9-5.7A8.38 8.38 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5z"></path></svg></button></div>
+    </div>
+    <div class="flow-arrows single"><span class="ar"><svg viewBox="0 0 16 26"><line x1="8" y1="0" x2="8" y2="20" stroke="currentColor" stroke-width="1.5"></line><path d="M3 15 L8 22 L13 15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></div>
+    <div class="flow-pill" data-goto="8" style="opacity: 1;" data-cid="c12">
+      <span class="pill-no" data-edit="">STEP 8. 경평 대응 지표 검토(수치 활용 여부)</span>
+      <span data-edit="">&nbsp;-&gt; 수치 검토 후 필요 시 STEP 5로 재검토&nbsp;<br></span>
+    <button type="button" class="fc-check" aria-label="점검 완료 체크" aria-checked="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 L9 17 L4 12"></path></svg></button><button type="button" class="fc-comment" aria-label="코멘트"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.6-.8L3 21l1.9-5.7A8.38 8.38 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5z"></path></svg></button></div>
+
+    <div class="flow-hint" data-edit="">카드를 클릭하면 해당 STEP의 상세 내용이 팝업으로 열립니다</div>
+  </div>
+</section>
+
+
+<!-- ===== 분야별 요약 ===== -->
+<section id="summary">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">분야별 핵심 요약</div>
+      <h2 data-edit="">논문 · 특허 성과 산출 개요</h2>
+      <p data-edit="">각 분야의 목표, 주요 KPI, 데이터 수집, 핵심 매칭 방식, 주요 이슈, 정확성 향상 방식을 정리한다.</p>
+    </div>
+
+    <div class="grid2">
+      <!-- 논문 -->
+      <div class="domain paper">
+        <div class="domain-top">
+          <span class="tag" data-edit="">논문</span>
+          <h3 data-edit="">JCR 상위 10% 논문 성과</h3>
+          <p class="goal" data-edit="">과기분야 사업 수행으로 산출된 JCR 피인용 상위 10% 학술지 게재 논문을 일관·재현 가능하게 자동 추출하여 경평 계량값을 산출한다.</p>
+        </div>
+        <div class="domain-body">
+          <div class="field">
+            <div class="label">주요 KPI</div>
+            <div class="val" data-edit="">분야별 JCR 상위 10% 학술지 발표 논문 편수(지표는 ’21~’26 반영), 저자 매칭 기반 <b>참여율·경평 산출값</b>(주저자/공동저자 구분)</div>
+          </div>
+          <div class="field">
+            <div class="label">데이터 수집</div>
+            <div class="val" data-edit="">
+              <ul>
+                <li>연계 DB: Web of Science(WoS) Open API</li>
+                <li>수집 기간: 발행년도 2020~2026 (지표 ’21~’26 반영)</li>
+                <li>검색 조건: Funding Agency = National Research Foundation of KOREA 또는 NRF of Korea</li>
+                <li>Document Types: Article, Review Article / Index: SCIE·A&amp;HCI·SSCI</li>
+              </ul>
+            </div>
+          </div>
+          <div class="field">
+            <div class="label">핵심 매칭 방식 — 저자명 매칭</div>
+            <div class="val" data-edit="">
+              과제번호 앵커링으로 후보군을 <b>해당 과제 참여연구원(소규모)</b>으로 한정한 뒤 판정<ul>
+                <li>방향1: 영문명 직접 매칭(대소문자·하이픈·공백·성명순서 무시)</li>
+                <li>방향2: 국문명 로마자 변환 후 매칭</li>
+                <li>방향3: 로마자 변환 규칙 다중화(성씨·이름형식·철자 변형 다발 생성)</li>
+                <li>방향4: 이니셜 축약 대응(후보 내 유일 대응 시 확정)</li>
+                <li>방향5: 퍼지 매칭으로 잔여 오차 흡수(편집거리·Jaro-Winkler)</li>
+              </ul>
+            </div>
+          </div>
+          <div class="field">
+            <div class="label">주요 이슈</div>
+            <div class="val" data-edit="">
+              <ul>
+                <li>검색 조건 표기 다양성으로 결과 상이</li>
+                <li>다운로드 시점에 따라 동일 조건도 데이터가 달라지는 현상</li>
+                <li>저자명 영한 변환 방식에 따라 참여율 산출 결과가 달라지는 구조적 한계</li>
+                <li>(자문) 과기분야 R&amp;D 과제 시 SSCI 분야까지 JCR 리스트를 볼지 여부</li>
+              </ul>
+            </div>
+          </div>
+          <div class="field">
+            <div class="label">정확성 향상 방식</div>
+            <div class="val" data-edit="">정확히 매칭된 건만 우선 계산값 부여 후 개선 지속, 로마자 규칙 다중화·이니셜 대응으로 규칙 기반 매칭률 제고, AI(LLM)는 <b>회색구간 재순위화</b> 용도로만 제한적 활용</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 특허 -->
+      <div class="domain patent">
+        <div class="domain-top">
+          <span class="tag" data-edit="">특허</span>
+          <h3 data-edit="">지식재산권 국내외 등록건수</h3>
+          <p class="goal" data-edit="">KIPRIS 등록특허에서 재단이 연구관리전문기관인 사사 특허를 자동 추출하고, 사사 내 전문기관 수로 기여율을 산출하며 국내·해외(삼극) 등록 여부까지 판정한다.</p>
+        </div>
+        <div class="domain-body">
+          <div class="field">
+            <div class="label">주요 KPI</div>
+            <div class="val" data-edit="">
+              지식재산권 국내외 등록 건수(’21~’26), <b>실적값 = 기여율 × 가중치</b>
+              <ul>
+                <li>가중치: KR=1, US·EP·JP=각 2, 삼극(3국 동시 등록)=10</li>
+                <li>기여율 = 재단 과제(전문기관) 수 ÷ 해당 특허의 전체 지원기관 수(사사)</li>
+                <li>삼극은 US·EP·JP ‘등록’ 동시 충족 시에만 인정</li>
+              </ul>
+            </div>
+          </div>
+          <div class="field">
+            <div class="label">데이터 수집</div>
+            <div class="val" data-edit="">
+              <ul>
+                <li>연계 DB: KIPRIS+ Open API</li>
+                <li>국내: ’21~’26 등록일자 기준 전체 bulk 수집 → 서지상세에서 연구관리전문기관명(사사) 전량 파싱</li>
+                <li>해외: 재단 특허의 패밀리 출원번호로 US·EP·JP 등록 여부 확인</li>
+                <li>국내 모집단 소급 수집(해외등록 지연 감안)</li>
+              </ul>
+            </div>
+          </div>
+          <div class="field">
+            <div class="label">핵심 매칭 방식 — 사사 판정 + 기관수 카운트</div>
+            <div class="val" data-edit="">
+              <ul>
+                <li>재단 사사 판정: 연구관리전문기관명(rndSpecialInstituteName) 기준</li>
+                <li><b>전문기관 수 카운트</b>: 각 특허 사사표기를 파싱해 지원기관이 총 몇 개인지 산출 → 기여율 분모로 사용 (예: 전문기관 3개면 재단 기여율 1/3)</li>
+                <li>제외사업 매칭: 엑셀(유형·사업명) 완전일치, 부분일치는 수기 검토(NTIS 과제 번호 매칭 등 활용)</li>
+                <li>국내 출원번호 → 패밀리 → 삼극(US·EP·JP) 판정으로 개별 특허(행) 처리</li>
+              </ul>
+            </div>
+          </div>
+          <div class="field">
+            <div class="label">주요 이슈</div>
+            <div class="val" data-edit="">
+              <ul>
+                <li>‘연구관리전문기관명’ 검색 항목 미제공 → 사업명/과제명 동시 검색 한계</li>
+                <li>사업명 입력 형태 다양성으로 정확 매칭 불가</li>
+                <li>기존 크롤링 기반 파이썬 수작업 → 오류 시 데이터 누락 위험</li>
+                <li>(자문) 해외특허 서비스 활용신청, NTIS 연계 현황, 소급기간 확정</li>
+              </ul>
+            </div>
+          </div>
+          <div class="field">
+            <div class="label">정확성 향상 방식</div>
+            <div class="val" data-edit="">국내 모집단 <b>소급기간 5년(1안)으로 확정</b>(PCT·파리조약·국가별 심사적체 고려), 국가연구개발사업 미표기 건 수집 여부 검토, 사업명 vs NTIS 과제번호 방식 실익 비교 후 정책 결정</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 팀 역할 ===== -->
+<section id="teams">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">협업 체계</div>
+      <h2 data-edit="">참여 팀과 역할(Role)</h2>
+      <p data-edit="">색상은 각 팀을 나타낸다. 카드를 클릭하면 아래 STEP에서 해당 팀이 주관·협업하는 단계만 강조된다.</p>
+    </div>
+    <div class="teams">
+      <div class="team-card data" data-team="data">
+        <h4><span class="dot"></span><span data-edit="">연구데이터분석팀</span></h4>
+        <div class="role" data-edit="">아르고넷 · 시스템 개발 주관</div>
+        <div class="desc" data-edit="">KRD 내 구축시스템 개발, 외부 DB API 연계, 데이터 수집·정제, 저자명·사사 매칭 및 실적 산출 로직 구현을 담당한다.</div>
+        <div class="steps-owned">
+          <span class="st-badge">STEP 2</span><span class="st-badge">STEP 3</span>
+          <span class="st-badge">STEP 5</span><span class="st-badge">STEP 6</span>
+        </div>
+      </div>
+      <div class="team-card strat dim" data-team="strat">
+        <h4><span class="dot"></span><span data-edit="">혁신전략팀</span></h4>
+        <div class="role" data-edit="">기준 설계 · 검증 주관</div>
+        <div class="desc" data-edit="">수집기준·신규지표·제외사업·사사판정 기준 설계, 모집단 정제 기준 확정, 회색구간 검증 및 정확성 향상(안) 검토를 담당한다.</div>
+        <div class="steps-owned">
+          <span class="st-badge">STEP 1</span><span class="st-badge">STEP 4</span>
+          <span class="st-badge">STEP 7</span><span class="st-badge">STEP 8</span>
+        </div>
+      </div>
+      <div class="team-card ai dim" data-team="ai">
+        <h4><span class="dot"></span><span data-edit="">AI정보혁신총괄팀</span></h4>
+        <div class="role" data-edit="">STEP 4 협업</div>
+        <div class="desc" data-edit="">STEP 4 사사·모집단 정제 과정에 협업으로 참여한다.</div>
+        <div class="steps-owned">
+          <span class="st-badge">STEP 4</span>
+        </div>
+      </div>
+    </div>
+    <div class="filter-note" id="filterNote">연구데이터분석팀(이)가 참여하는 STEP만 강조 중 · 다시 클릭하면 해제</div>
+  </div>
+</section>
+
+<!-- ===== 하단 노트 ===== -->
+<section id="notes">
+  <div class="wrap">
+    <div class="note-box">
+      <h3 data-edit="">근본 문제의식</h3>
+      <p data-edit="">외부 DB의 검색 조건 다양성·다운로드 시점 편차, 담당자 수기 재검토 의존, 연구자의 자유로운 사사정보 입력(오기·누락)으로 인해 성과 산출의 일관성·재현가능성이 부족하며 일부 성과가 손실되는 것이 핵심 문제다.</p>
+      <p data-edit="">이를 API 자동 연계 + 규칙 기반 매칭(+ 선택적 AI 보조)으로 해결하는 것이 이번 구축의 방향이다.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap" data-edit="">연구데이터분석팀 · 혁신전략팀 · AI정보혁신총괄팀 협업 자료 — 내부 검토용(안)</div>
+</footer>
+
+<!-- ===== STEP 상세 모달 ===== -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box" id="modalBox" role="dialog" aria-modal="true">
+    <button class="modal-close" id="modalClose" aria-label="닫기">✕</button>
+    <div class="modal-content" id="modalContent"><div class="panel owner-data" data-step="3" data-teams="data">
+        <div class="panel-head">
+          <div class="panel-no"><small>STEP</small>3</div>
+          <div class="ph-main">
+            <div class="ph-title" data-edit="">데이터 수집</div>
+            <div class="ph-when" data-edit="">2단계 데이터 수집 ·<span style="font-size: 17.55px;">’26 9월 1주</span></div>
+          </div>
+          <div class="ph-teams">
+            <span class="role-badge rb-data"><span class="lead">주관</span>연구데이터분석팀</span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="st-cols">
+            <div class="st-col paper"><div class="dh"><span class="pd"></span>논문</div><ul data-edit="">
+              <li>발행년도 2021~2026 논문 수집 (2024년 논문 정보로 테스트 - 추후 API 다운로드 시점 검토)</li>
+              <li>Index: SCIE · A&amp;HCI · SSCI (인문사회 포함)</li>
+            </ul></div>
+            <div class="st-col patent"><div class="dh"><span class="pd"></span>특허</div><ul data-edit="">
+              <li>’21~’26 등록일자 기준 국내 등록특허 전체 bulk 수집</li>
+              <li>해외등록 지연을 감안한 소급 5년분 포함 수집</li>
+            </ul></div>
+          </div>
+        </div>
+      </div></div>
+    <div class="modal-editbar">
+      <button class="nav-btn" id="modalEditBtn"><span>✎</span> 이 내용 편집</button>
+      <span class="modal-edit-hint">텍스트를 클릭해 바로 수정 · 변경사항은 [HTML 저장] 시 반영됩니다</span>
+    </div>
+    <div class="modal-nav">
+      <button class="nav-btn" id="prevStep">‹ 이전 STEP</button>
+      <button class="nav-btn" id="nextStep">다음 STEP ›</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 코멘트 모달 ===== -->
+<div class="modal-overlay" id="commentOverlay">
+  <div class="cmt-box" role="dialog" aria-modal="true">
+    <button class="modal-close" id="cmtClose" aria-label="닫기">✕</button>
+    <div class="cmt-mhead">
+      <div class="cmt-mkicker">코멘트</div>
+      <div class="cmt-mtitle" id="cmtModalTitle">카드</div>
+    </div>
+    <div class="cmt-mlist" id="cmtModalList"><div class="cmt-item"><div class="ci-meta"><span class="ci-author">김영은</span><span>26.09.22 14:16</span></div><div class="ci-text">[향후 과제] 사업명·과제명·과제번호 기준을 각각 적용하여 결과 비교
+- 기준별 결과와 원데이터를 표본검토한 후 최종 매칭 기준 선정</div><div class="ci-actions"><button class="ci-btn" data-act="resolve" data-cid="c6" data-id="m1790054176077743">해결</button><button class="ci-btn danger" data-act="delete" data-cid="c6" data-id="m1790054176077743">삭제</button></div></div></div>
+    <div class="cmt-mfoot">
+      <div class="cmt-author cmt-author-modal">
+        <label for="cmtAuthor">작성자</label>
+        <input type="text" id="cmtAuthor" placeholder="이름 입력 (코멘트에 표시됨)" maxlength="20">
+      </div>
+      <textarea id="cmtInput" placeholder="의견을 입력하세요 (Ctrl+Enter로 등록)" style="height: 253px;"></textarea>
+      <button class="cmt-add" id="cmtAddBtn">코멘트 추가</button>
+      <div class="cmt-foot-note" id="cmtSyncNote">작성자 이름과 한국시각이 함께 기록됩니다 · 코멘트는 모두에게 공유됩니다</div>
+    </div>
+  </div>
+</div>
+
+<!-- 코멘트 데이터 저장소 (HTML 저장 시 함께 보존됨) -->
+<script src="sheets-config.js"></script>
+<script src="comments.js"></script>
+<script type="application/json" id="commentData">{"meta":{"author":""},"byCard":{"c5":[{"id":"1151c178-25aa-46f1-8259-f526f3abad15","author":"권은화","text":"과제번호 미매칭 논문 4,553편의 누락률 개선 시\n - IRIS이관 과제(ernd 과제 번호와 202x-NRxxxx 형태의 과제번호 2개 보유)의 과제 번호 재매칭 필요(AI정보혁신총괄팀 전체 과제 정보 협조 필요 or 병철과장님 조분평 데이터 매칭 필요)\n - 과제번호 부분일치 확인 필요\n※ 대부분 연도 네자리, 문자+숫자 반복 3번+일련숫자 6자리이나, 1) 간혹 ernd 사업체계로 인해 문자+숫자 반복 4번 과제코드도 있고, 2) 통합이지바로 번호를 사용 시, 뒤에 2~3자리 숫자가 더 붙기도 함","resolved":false,"ts":"26. 09. 22. 16:51"},{"id":"m178848469118195","author":"송병철","text":"권은화 과장님이 보낸 ★과제_마스터 과제 정보로 매칭중(추후 매칭율 검토 후 AI정보혁신총괄팀과 협의 후 과제 DB 요청 예정)","resolved":false,"ts":"26. 09. 04. 10:18"},{"id":"m1788502905359192","author":"정형상","text":"1.  '알고리즘으로 분류' 코드 개발 중\n2.  '로컬 LLM으로 분류' 코드 개발 중\n  - 로컬 LLM: QWen3.6-35B 모델 설치 완료","resolved":false,"ts":"26. 09. 04. 15:21"},{"id":"m1790054840333436","author":"김영은","text":"[진행 현황] 2024년 수집 논문 34,279편을 대상으로 과제번호 매칭 수행\n- 과제 매칭 논문 29,726편, 미매칭 논문 4,553편\n- 복수 과제 연결을 포함한 논문–과제 매핑 약 4.8만 건 생성\n\n[향후 과제] 과제번호 미매칭 논문 4,553편의 누락률 개선\n- 공백·하이픈·특수문자 및 단계·연차번호 차이 확인\n- e-R&D·IRIS 이관 전후 과제번호 추가 확보\n- 통합 과제DB를 활용한 부분일치 및 역추적 매칭 검토","resolved":false,"ts":"26. 09. 22. 14:27"},{"id":"m1790054888101844","author":"김영은","text":"[진행 현황] 규칙 기반 1차 매칭 및 LM 2차 검증을 통해 논문 저자–과제 참여연구원 매칭 수행\n- 기존 수작업 결과와 비교 가능한 25,359건 중 약 21,800건의 참여율 산출값 일치\n- 신규 산출값이 높은 2,980건, 낮은 576건 확인\n\n[향후 과제] 저자 매칭 결과의 정확도 검증 및 로직 보완\n- 신규 산출값이 높은 2,980건 표본검증\n- 신규 산출값이 낮은 건 중 오류 추정 약 40건 재점검\n- 영문명 표준화 규칙의 정확도 확인\n- 추가 판단 모델 테스트","resolved":false,"ts":"26. 09. 22. 14:28"}],"c0":[{"id":"m1788484521868821","author":"송병철","text":"@이수진 연구원님\n - 제외사업 엑셀(유형, 사업명) 기준 수립 및 과거 특허 매칭 방식 결과 파일 공유해주시면 감사하겠습니다.","resolved":false,"ts":"26. 09. 04. 10:15"}],"c1":[{"id":"m1788484591746549","author":"송병철","text":"2024년 논문 서지 정보 수집 완료(Test용) \n- 2024년으로 Step 2- Step 5 진행(추후 다운로드 시점 결정)","resolved":false,"ts":"26. 09. 04. 10:16"}],"c3":[{"id":"m178848459689612","author":"송병철","text":"2024년 논문 서지 정보 수집 완료(Test용) \n- 2024년으로 Step 2- Step 5 진행(추후 다운로드 시점 결정)","resolved":false,"ts":"26. 09. 04. 10:16"},{"id":"m179005369827382","author":"김영은","text":"[완료] 2024년 논문 34,279건 수집 및 테스트 완료\n\nSCIE·SSCI·A&HCI 포함\n실제 WoS 출판연도를 기준으로 성과연도 재분류\n- 2024년 30,793건, 2025년 3,427건, 기타 59건\n\n[향후 과제] 전체 대상연도 수집시점 및 연도별 확정값 관리방식 결정\n- 매년 경영평가가 종료되면 해당 연도 이전 데이터는 확정값으로 고정함.\n- 미래 연도 데이터가 함께 조회되는 경우에는 해당 연도 처리 시점까지 보류함.","resolved":false,"ts":"26. 09. 22. 14:08"}],"c4":[{"id":"m1790054132218217","author":"김영은","text":"[향후 과제] 특허 수집·매칭 기준 확정 후 테스트 진행\n- 2024년·2025년 4분기 등 표본기간 우선 비교\n- 10월 초 시뮬레이션 추진","resolved":false,"ts":"26. 09. 22. 14:15"}],"c2":[{"id":"m1790054152910123","author":"김영은","text":"[향후 과제] 특허 API 테스트 착수\n- 사업명·과제명·과제번호 등 기준별 조회·조인 결과 비교\n- 대량 데이터 처리를 위해 개발용 PC 활용 검토","resolved":false,"ts":"26. 09. 22. 14:15"}],"c6":[{"id":"m1790054176077743","author":"김영은","text":"[향후 과제] 사업명·과제명·과제번호 기준을 각각 적용하여 결과 비교\n- 기준별 결과와 원데이터를 표본검토한 후 최종 매칭 기준 선정","resolved":false,"ts":"26. 09. 22. 14:16"}],"c7":[{"id":"m1790056673937660","author":"송병철","text":"핵심 이슈★ \u003c과제번호>\n미매칭된 4,553편 과제번호 매칭율 높일 수 있는 방안 검토\n 1. 3,254편 (사사에 재단 과제번호가 없는 논문) --> IRIS, 조분평 데이터에서 역추적\n 2. 1,299편 (과제번호 오류 등) \n- 과제번호 매칭율, 저자 매칭율 등으로 과제번호 매칭율 UP↑\n\n핵심 이슈★ \u003c저자명>\n신규 v.1.0의 신규 산출값 높은 2,980건에 대한 모델 검증","resolved":false,"ts":"26. 09. 22. 14:57"}]}}</script>
+
+<!-- STEP 상세 원본(숨김 · 편집 가능) -->
+<div id="stepSource" style="display: none;">
+<div class="wrap" style="padding:24px 24px 0"><div class="sec-head"><div class="kicker">편집 영역 · STEP 상세</div><h2>STEP 1~8 상세 내용 (팝업에 표시됨)</h2><p>아래 내용을 수정하면 흐름도 카드 클릭 시 뜨는 팝업에 반영됩니다.</p></div></div>
+      <div class="panel owner-strat active" data-step="1" data-teams="strat,data">
+        <div class="panel-head">
+          <div class="panel-no"><small>STEP</small>1</div>
+          <div class="ph-main">
+            <div class="ph-title" data-edit="">수집조건 · 지표 · 사사판정 기준 확정</div>
+            <div class="ph-when" data-edit="">1단계 설계 · 기준 확정 · ’26 8월</div>
+          </div>
+          <div class="ph-teams">
+            <span class="role-badge rb-strat"><span class="lead">주관</span>혁신전략팀</span>
+            <span class="role-badge rb-data support"><span class="lead">협업</span>연구데이터분석팀</span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="st-cols">
+            <div class="st-col paper"><div class="dh"><span class="pd"></span>논문</div><ul data-edit="">
+              <li>API DB: WOS EXPANDED API (유료 - 약 7천만원) 계약 완료</li><li>검색 조건 확정: Funding Agency = National Research Foundation of KOREA 또는 NRF of Korea</li>
+              <li>수집 범위 확정: 발행년도 2020~2026, Document Types(Article·Review Article), Index(SCIE·A&amp;HCI·SSCI)</li>
+              <li>API 활용 항목 정의: 과제번호 · 저널명 · ISSN · 교신저자 · 제1저자 등(실제 활용 Index 값 결정)</li>
+            </ul></div>
+            <div class="st-col patent"><div class="dh"><span class="pd"></span>특허</div><ul data-edit="">
+              <li>API DB: KIPRIS PLUS(API) - 무료</li><li>사사 판정 기준 확정: 연구관리전문기관명 = 한국연구재단·연구재단·NRF·National Research Foundation of Korea</li><li style="color: rgb(61, 75, 99);">수집 범위 확정: 2021 ~ 2026, 국내외 등록특허 전체, 재단 특허의 패밀리 출원번호로 US<span style="font-size: 18.9px;">·</span>EP<span style="font-size: 18.9px;">·</span>JP 등록&nbsp;</li>
+              <li>제외사업 엑셀(유형·사업명) 기준 수립</li>
+            </ul></div>
+          </div>
+          <div class="collab-line" data-edit="">모든 후속 단계의 기준을 확정하는 공통 선행 단계 · 혁신전략팀 설계, 연구데이터분석팀 검토</div>
+        </div>
+      </div>
+
+      <div class="panel owner-data" data-step="2" data-teams="data">
+        <div class="panel-head">
+          <div class="panel-no"><small>STEP</small>2</div>
+          <div class="ph-main">
+            <div class="ph-title" data-edit="">외부 DB Open API 연계 개발</div>
+            <div class="ph-when" data-edit="">2단계 데이터 수집 · ’26 9월 1주</div>
+          </div>
+          <div class="ph-teams">
+            <span class="role-badge rb-data"><span class="lead">주관</span>연구데이터분석팀</span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="st-cols">
+            <div class="st-col paper"><div class="dh"><span class="pd"></span>논문</div><ul data-edit="">
+              <li>Web of Science(WoS) Open API 연계</li>
+              <li>KRD 내 뷰테이블 구성</li>
+            </ul></div>
+            <div class="st-col patent"><div class="dh"><span class="pd"></span>특허</div><ul data-edit="">
+              <li>KIPRIS+ Open API 연계</li>
+              <li>오퍼레이션 구성: 등록일자검색 → 서지상세 → 패밀리출원정보 → 해외특허검색(advancedSearch)</li>
+            </ul></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel owner-data" data-step="3" data-teams="data">
+        <div class="panel-head">
+          <div class="panel-no"><small>STEP</small>3</div>
+          <div class="ph-main">
+            <div class="ph-title" data-edit="">데이터 수집</div>
+            <div class="ph-when" data-edit="">2단계 데이터 수집 ·<span style="font-size: 17.55px;">’26 9월 1주</span></div>
+          </div>
+          <div class="ph-teams">
+            <span class="role-badge rb-data"><span class="lead">주관</span>연구데이터분석팀</span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="st-cols">
+            <div class="st-col paper"><div class="dh"><span class="pd"></span>논문</div><ul data-edit="">
+              <li>발행년도 2021~2026 논문 수집 (2024년 논문 정보로 테스트 - 추후 API 다운로드 시점 검토)</li>
+              <li>Index: SCIE · A&amp;HCI · SSCI (인문사회 포함)</li>
+            </ul></div>
+            <div class="st-col patent"><div class="dh"><span class="pd"></span>특허</div><ul data-edit="">
+              <li>’21~’26 등록일자 기준 국내 등록특허 전체 bulk 수집</li>
+              <li>해외등록 지연을 감안한 소급 5년분 포함 수집</li>
+            </ul></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel owner-strat" data-step="4" data-teams="strat,data,ai">
+        <div class="panel-head">
+          <div class="panel-no"><small>STEP</small>4</div>
+          <div class="ph-main">
+            <div class="ph-title" data-edit="">사사 · 모집단 정제</div>
+            <div class="ph-when" data-edit="">2단계 데이터 수집&nbsp;<span style="font-size: 17.55px;">·</span><span style="font-size: 17.55px;">’26 9월 2주</span></div>
+          </div>
+          <div class="ph-teams">
+            <span class="role-badge rb-strat"><span class="lead">주관</span>혁신전략팀</span>
+            <span class="role-badge rb-data support"><span class="lead">협업</span>연구데이터분석팀</span>
+            <span class="role-badge rb-ai support"><span class="lead">협업</span>AI정보혁신총괄팀</span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="st-cols">
+            <div class="st-col paper"><div class="dh"><span class="pd"></span>논문</div><ul data-edit="">
+              <li>과제번호 앵커링: 논문 ↔ 재단 과제 매칭(재단 모든 통합 DB)</li>
+              <li><span style="font-size: 18.9px;">참여연구원 앵커링: 논문 저자&nbsp;<span style="font-size: 18.9px;">↔ 과제 참여 연구자 매칭(저자명 매칭방식 참고)</span>&nbsp;</span></li>
+            </ul></div>
+            <div class="st-col patent"><div class="dh"><span class="pd"></span>특허</div><ul data-edit="">
+              <li>서지상세의 연구관리전문기관명 파싱 → 재단 사사 특허 추출</li>
+              <li>사사 내 전문기관 수 카운트: 각 특허 사사표기의 전체 지원기관 수 산출(기여율 분모)</li>
+              <li>명칭 표기 다양성(재단 명칭 변형) 정규화로 중복·오탐 없이 카운트</li>
+            </ul></div>
+          </div>
+          <div class="collab-line" data-edit="">STEP 5·6 매칭·산출의 필수 선행 단계</div>
+        </div>
+      </div>
+
+      <div class="panel owner-strat" data-step="5" data-teams="strat,data">
+        <div class="panel-head">
+          <div class="panel-no"><small>STEP</small>5</div>
+          <div class="ph-main">
+            <div class="ph-title" data-edit="">핵심 매칭 판단</div>
+            <div class="ph-when" data-edit="">3단계 핵심 매칭·실적 산출<span style="font-size: 17.55px;"> </span><span style="font-size: 17.55px;">·</span><span style="font-size: 17.55px;">’26 9월 3주</span></div>
+          </div>
+          <div class="ph-teams">
+            <span class="role-badge rb-strat"><span class="lead">주관</span>혁신전략팀</span>
+            <span class="role-badge rb-data support"><span class="lead">협업</span>연구데이터분석팀</span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="st-cols">
+            <div class="st-col paper"><div class="dh"><span class="pd"></span>논문 — 저자명 매칭 판단</div><ul data-edit="">
+              <li>&lt;선행&gt; 과제번호 매칭 후 과제번호에 따른 참여연구원 명단 내에서 검색 방식</li><li>방향1: 영문명 직접 매칭(대소문자·하이픈·공백·성명순서 무시)</li>
+              <li>방향2: 국문명 로마자 변환 후 매칭</li>
+              <li>방향3: 로마자 변환 규칙 다중화(성씨·이름형식·철자 변형 다발 생성)</li>
+              <li>방향4: 이니셜 축약 대응(후보 내 유일 대응 시 확정)</li>
+              <li>방향5: 퍼지 매칭(편집거리·Jaro-Winkler)으로 잔여 오차 흡수</li>
+            </ul></div>
+            <div class="st-col patent"><div class="dh"><span class="pd"></span>특허 — 제외사업 · 삼극 판정 판단</div><ul data-edit="">
+              <li>제외사업 완전일치 매칭(공백·특수문자 무시) - 제외사업 수기 검토</li>
+              <li>국내 출원번호 → 패밀리 출원번호 추적</li>
+              <li>패밀리 → 삼극(US·EP·JP) 등록 판정</li>
+            </ul></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel owner-data" data-step="6" data-teams="data,strat">
+        <div class="panel-head">
+          <div class="panel-no"><small>STEP</small>6</div>
+          <div class="ph-main">
+            <div class="ph-title" data-edit="">실적값 산출</div>
+            <div class="ph-when" data-edit="">3단계 핵심 매칭·실적 산출&nbsp;<span style="font-size: 17.55px;">·</span><span style="font-size: 17.55px;">’26 9월 4주</span></div>
+          </div>
+          <div class="ph-teams">
+            <span class="role-badge rb-data"><span class="lead">주관</span>연구데이터분석팀</span>
+            <span class="role-badge rb-strat support"><span class="lead">협업</span>혁신전략팀</span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="st-cols">
+            <div class="st-col paper"><div class="dh"><span class="pd"></span>논문</div><ul data-edit="">
+              <li>저자명은 영문→한글 전환하여 참여연구원과 매핑</li>
+              <li>주저자(제1·교신저자)/공동저자 구분 → 참여율 산출</li>
+              <li>경평 계량 산식 적용 → 경평 산출값 도출</li>
+            </ul></div>
+            <div class="st-col patent"><div class="dh"><span class="pd"></span>특허</div><ul data-edit="">
+              <li><b>실적값 = 기여율 × 가중치</b></li>
+              <li>기여율 = 재단 과제(전문기관) 수 ÷ 전체 지원기관 수(사사)</li>
+              <li>가중치: KR 1 · US·EP·JP 각 2 · 삼극 10 (삼극은 3국 동시 ‘등록’ 시에만 인정)</li>
+              <li>KR·US·EP·JP·삼극을 개별 특허(행)로 처리</li>
+            </ul></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel owner-strat" data-step="7" data-teams="strat,data">
+        <div class="panel-head">
+          <div class="panel-no"><small>STEP</small>7</div>
+          <div class="ph-main">
+            <div class="ph-title" data-edit="">검증 · 수기 검토</div>
+            <div class="ph-when" data-edit="">4단계 검증·정확성 고도화&nbsp;<span style="font-size: 17.55px;">·</span><span style="font-size: 17.55px;">’26 10월 1주 ~ 2주</span></div>
+          </div>
+          <div class="ph-teams">
+            <span class="role-badge rb-strat"><span class="lead">주관</span>혁신전략팀</span>
+            <span class="role-badge rb-data support"><span class="lead">협업</span>연구데이터분석팀</span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="st-cols">
+            <div class="st-col paper"><div class="dh"><span class="pd"></span>논문</div><ul data-edit="">
+              <li>정확히 매칭된 건만 우선 계산값 부여, 회색구간만 수기 검토로 최소화</li>
+              <li>JCR 상위 10% 수치 반영 검토(우상향 여부)</li><li style="color: rgb(61, 75, 99);">과제정보 매칭: WoS 내 과제번호 부정확 시 AI 학습 기반 정확 매칭 검토</li><li style="color: rgb(61, 75, 99);">저자명 매칭: 규칙 기반으로 대부분 해결, AI(LLM)는 회색구간 재순위화 용도로만 제한적 활용</li>
+            </ul></div>
+            <div class="st-col patent"><div class="dh"><span class="pd"></span>특허</div><ul data-edit="">
+              <li>부분일치 제외사업 수기 검토 병행</li>
+              <li>국가연구개발사업 미표기·요약정보에만 재단 표기된 건 수집 여부 검토</li><li style="color: rgb(61, 75, 99);">사업명 vs NTIS 과제번호 매칭 방식 실익 비교 후 정책 결정</li>
+            </ul></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel owner-strat" data-step="8" data-teams="strat,data">
+        <div class="panel-head">
+          <div class="panel-no"><small>STEP</small>8</div>
+          <div class="ph-main">
+            <div class="ph-title" data-edit="">경평 대응에 따른 지표 검토(수치 활용 여부 등)</div>
+            <div class="ph-when" data-edit="">수치 활용 여부 검토<span style="font-size: 17.55px;"> </span><span style="font-size: 17.55px;">·</span><span style="font-size: 17.55px;">’26 10월 2주</span></div>
+          </div>
+          <div class="ph-teams">
+            <span class="role-badge rb-strat"><span class="lead">주관</span>혁신전략팀</span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="st-cols">
+            <div class="st-col paper"><div class="dh"><span class="pd"></span>논문</div><ul data-edit="">
+              <li>JCR 상위 10% 논문 수치 검토</li>
+            </ul></div>
+            <div class="st-col patent"><div class="dh"><span class="pd"></span>특허</div><ul data-edit="">
+              <li>지식재산권 등록건수 수치 검토</li>
+            </ul></div>
+          </div>
+          <div class="st-single" data-edit="" style="margin-top:16px">
+            <b>공통:</b> STEP 5~7에서 발생한 회색구간·오탐을 상시 병렬로 지속 개선한다.
+          </div>
+          <div class="collab-line" data-edit="">협업: 연구데이터분석팀(구현)</div>
+        </div>
+      </div>
+</div>
+
+
+<script>
+// ===== STEP 상세 모달 =====
+var stepSource = document.getElementById('stepSource');
+var modalOverlay = document.getElementById('modalOverlay');
+var modalContent = document.getElementById('modalContent');
+var currentStep = 1;
+
+function openStep(n){
+  currentStep = n;
+  var src = stepSource.querySelector('.panel[data-step="'+n+'"]');
+  if(!src) return;
+  modalContent.innerHTML = src.outerHTML; // 원본을 복제해 모달에 표시
+  applyModalEditable(); // 편집 중이면 복제된 팝업 내용도 편집 가능하도록 적용
+  document.getElementById('prevStep').disabled = (n <= 1);
+  document.getElementById('nextStep').disabled = (n >= 8);
+  modalOverlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('modalBox').scrollIntoView({block:'nearest'});
+}
+function closeStep(){
+  modalOverlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ===== 모달 내용(팝업) 편집 =====
+var modalEditing = false;
+var modalEditBtn = document.getElementById('modalEditBtn');
+
+// 현재 편집 상태를 모달 복제본에 반영 (openStep·토글 시 호출)
+function applyModalEditable(){
+  modalContent.classList.toggle('editing', modalEditing);
+  modalContent.querySelectorAll('[data-edit]').forEach(function(el){
+    el.setAttribute('contenteditable', modalEditing ? 'true' : 'false');
+  });
+  modalEditBtn.classList.toggle('active', modalEditing);
+  modalEditBtn.innerHTML = modalEditing ? '<span>✓</span> 편집 완료' : '<span>✎</span> 이 내용 편집';
+}
+
+// '이 내용 편집' 버튼 토글
+modalEditBtn.addEventListener('click', function(){
+  modalEditing = !modalEditing;
+  applyModalEditable();
+});
+
+// 팝업에서 고친 내용을 숨겨진 원본(stepSource)에 실시간 반영 → HTML 저장 시 유지
+modalContent.addEventListener('input', function(){
+  var edited = modalContent.querySelector('.panel[data-step]');
+  if(!edited) return;
+  var n = edited.getAttribute('data-step');
+  var src = stepSource.querySelector('.panel[data-step="'+n+'"]');
+  if(src){ src.innerHTML = edited.innerHTML; }
+});
+
+// 흐름도 카드 클릭 → 모달 열기
+document.querySelectorAll('[data-goto]').forEach(function(el){
+  el.addEventListener('click', function(){
+    if(document.body.classList.contains('editing')) return; // 편집 중엔 비활성화
+    openStep(parseInt(el.dataset.goto));
+  });
+});
+
+// 모달 닫기 (X · 배경 클릭 · ESC)
+document.getElementById('modalClose').addEventListener('click', closeStep);
+modalOverlay.addEventListener('click', function(e){ if(e.target === modalOverlay) closeStep(); });
+document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeStep(); });
+
+// 이전/다음 STEP
+document.getElementById('prevStep').addEventListener('click', function(){
+  if(currentStep > 1) openStep(currentStep - 1);
+});
+document.getElementById('nextStep').addEventListener('click', function(){
+  if(currentStep < 8) openStep(currentStep + 1);
+});
+
+// ===== 팀 필터 (팀 카드 클릭 시 관련 흐름도 카드 강조) =====
+var activeTeam = null;
+var teamNames = {data:'연구데이터분석팀', strat:'혁신전략팀', ai:'AI정보혁신총괄팀'};
+document.querySelectorAll('.team-card').forEach(function(card){
+  card.addEventListener('click', function(){
+    if(document.body.classList.contains('editing')) return;
+    var t = card.dataset.team;
+    var note = document.getElementById('filterNote');
+    if(activeTeam === t){
+      activeTeam = null;
+      clearFilter();
+      note.textContent = '';
+    } else {
+      activeTeam = t;
+      document.querySelectorAll('.team-card').forEach(function(c){
+        c.classList.toggle('dim', c.dataset.team !== t);
+      });
+      // 해당 팀이 참여하는 흐름도 카드만 강조, 나머지는 흐리게
+      document.querySelectorAll('[data-goto]').forEach(function(fc){
+        var n = fc.dataset.goto;
+        var panel = stepSource.querySelector('.panel[data-step="'+n+'"]');
+        var teams = (panel.dataset.teams||'').split(',');
+        fc.style.opacity = (teams.indexOf(t) === -1) ? '.35' : '1';
+      });
+      note.textContent = teamNames[t] + '(이)가 참여하는 STEP만 강조 중 · 다시 클릭하면 해제';
+    }
+  });
+});
+function clearFilter(){
+  document.querySelectorAll('.team-card').forEach(function(c){ c.classList.remove('dim'); });
+  document.querySelectorAll('[data-goto]').forEach(function(fc){ fc.style.opacity = '1'; });
+}
+
+// ===== 편집 모드 토글 =====
+var editing = false;
+var editBtn = document.getElementById('editBtn');
+editBtn.addEventListener('click', function(){
+  editing = !editing;
+  document.body.classList.toggle('editing', editing);
+  editBtn.classList.toggle('active', editing);
+  editBtn.innerHTML = editing ? '<span>✓</span> 편집 완료' : '<span>✎</span> 편집 모드';
+  document.querySelectorAll('[data-edit]').forEach(function(el){
+    el.setAttribute('contenteditable', editing ? 'true' : 'false');
+  });
+  if(editing){
+    activeTeam = null; clearFilter();
+    document.getElementById('filterNote').textContent='';
+    closeStep(); // 열린 모달 닫기
+    stepSource.style.display = 'block'; // 편집 중엔 원본 STEP 상세를 펼쳐 편집 가능
+  } else {
+    stepSource.style.display = 'none';
+  }
+});
+
+// ===== HTML 저장 (현재 편집 상태 그대로 다운로드) =====
+document.getElementById('saveBtn').addEventListener('click', function(){
+  // 편집 상태를 해제한 깨끗한 사본을 저장
+  var wasEditing = editing;
+  if(wasEditing){ editBtn.click(); }
+  // 모달(팝업) 편집 상태도 해제 (원본 동기화는 이미 완료된 상태)
+  modalEditing = false;
+  modalContent.classList.remove('editing');
+  modalEditBtn.classList.remove('active');
+  modalEditBtn.innerHTML = '<span>✎</span> 이 내용 편집';
+  // 코멘트 모달도 닫아 깨끗한 사본으로 저장
+  document.getElementById('commentOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  document.querySelectorAll('[data-edit]').forEach(function(el){ el.removeAttribute('contenteditable'); });
+  var clone = document.documentElement.outerHTML;
+  var blob = new Blob(['<!DOCTYPE html>\n' + clone], {type:'text/html;charset=utf-8'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  // 파일명: 한국시각 기준 YYMMDD
+  var now = new Date();
+  var kst = new Date(now.getTime() + (now.getTimezoneOffset()*60000) + (9*3600000));
+  var yy = String(kst.getFullYear()).slice(2);
+  var mm = String(kst.getMonth()+1).padStart(2,'0');
+  var dd = String(kst.getDate()).padStart(2,'0');
+  a.href = url;
+  a.download = yy+mm+dd+'_KRD_성과관리시스템_구축계획.html';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+// ===== 업무 점검 체크박스 =====
+(function(){
+  var cards = document.querySelectorAll('[data-goto]'); // 흐름도 카드 + STEP 8 pill
+  var CHECK_KEY = 'krd-performance-plan-checks-v1';
+  var checked = {};
+  try { checked = JSON.parse(localStorage.getItem(CHECK_KEY) || '{}'); } catch(e){}
+  var CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 L9 17 L4 12"></path></svg>';
+
+  // 각 카드에 체크박스 부착 (저장본 재열람 시 중복 생성 방지)
+  function attachCheck(card){
+    var cid = card.getAttribute('data-cid');
+    card.classList.toggle('done', !!checked[cid]);
+    var chk = card.querySelector(':scope > .fc-check');
+    if(!chk){
+      chk = document.createElement('button');
+      chk.type = 'button';
+      chk.className = 'fc-check';
+      chk.setAttribute('aria-label', '점검 완료 체크');
+      chk.innerHTML = CHECK_SVG;
+      card.appendChild(chk);
+    }
+    chk.setAttribute('aria-checked', card.classList.contains('done') ? 'true' : 'false');
+    chk.onclick = function(e){
+      e.stopPropagation(); // 카드 클릭(팝업 열기)과 분리
+      card.classList.toggle('done'); // done 클래스가 저장본에 그대로 반영됨
+      checked[cid] = card.classList.contains('done');
+      try { localStorage.setItem(CHECK_KEY, JSON.stringify(checked)); } catch(e){}
+      chk.setAttribute('aria-checked', card.classList.contains('done') ? 'true' : 'false');
+      updateProgress();
+    };
+  }
+  cards.forEach(attachCheck);
+
+  // 진행률 갱신 (완료 카드 수 / 전체)
+  window.updateProgress = function(){
+    var total = cards.length, done = 0;
+    cards.forEach(function(c){ if(c.classList.contains('done')) done++; });
+    var pct = total ? Math.round(done / total * 100) : 0;
+    document.getElementById('cpDone').textContent = done;
+    document.getElementById('cpTotal').textContent = total;
+    document.getElementById('cpFill').style.width = pct + '%';
+  };
+  updateProgress();
+
+  // 전체 해제
+  document.getElementById('cpReset').addEventListener('click', function(){
+    checked = {};
+    try { localStorage.setItem(CHECK_KEY, '{}'); } catch(e){}
+    cards.forEach(function(c){
+      c.classList.remove('done');
+      var chk = c.querySelector(':scope > .fc-check');
+      if(chk) chk.setAttribute('aria-checked', 'false');
+    });
+    updateProgress();
+  });
+})();
+
+// ===== 카드별 코멘트 =====
+(function(){
+  var STORE = document.getElementById('commentData');
+  var data;
+  try { data = JSON.parse(STORE.textContent || '{}'); } catch(e){ data = {}; }
+  if(typeof data !== 'object' || data === null) data = {};
+  if(!data.meta) data.meta = {author:''};
+  if(!data.byCard) data.byCard = {};
+
+  var cards = document.querySelectorAll('[data-goto]');
+  // 카드별 고유 id 부여 (없을 때만 → 저장본 재열람 시 유지)
+  cards.forEach(function(card, i){
+    if(!card.getAttribute('data-cid')) card.setAttribute('data-cid', 'c'+i);
+  });
+
+  var BUBBLE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.6-.8L3 21l1.9-5.7A8.38 8.38 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5z"></path></svg>';
+
+  // 현재 화면의 코멘트를 HTML 저장본에도 남기고, 작성자 이름은 이 브라우저에 기억
+  function persist(){
+    STORE.textContent = JSON.stringify(data).replace(/</g, '\\u003c');
+    try { localStorage.setItem('krd-comment-author', data.meta.author || ''); } catch(e){}
+  }
+
+  function nowKST(){
+    var n = new Date();
+    var k = new Date(n.getTime() + n.getTimezoneOffset()*60000 + 9*3600000);
+    var p = function(x){ return String(x).padStart(2,'0'); };
+    return String(k.getFullYear()).slice(2)+'.'+p(k.getMonth()+1)+'.'+p(k.getDate())+' '+p(k.getHours())+':'+p(k.getMinutes());
+  }
+  function isoToKST(iso){
+    var d = new Date(iso);
+    if(isNaN(d.getTime())) return nowKST();
+    return new Intl.DateTimeFormat('ko-KR', {
+      timeZone:'Asia/Seoul', year:'2-digit', month:'2-digit', day:'2-digit',
+      hour:'2-digit', minute:'2-digit', hour12:false
+    }).format(d).replace(/\. /g,'.').replace(/\.$/,'');
+  }
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function cardByCid(cid){ return document.querySelector('[data-cid="'+cid+'"]'); }
+  function cardTitle(card){ var t = card && card.querySelector('.fc-no, .pill-no'); return t ? t.textContent.trim() : '카드'; }
+  function listOf(cid){ return data.byCard[cid] || []; }
+
+  // 작성자 입력 (패널·모달 두 곳을 동기화)
+  var authorInput = document.getElementById('authorName');
+  var mAuthor = document.getElementById('cmtAuthor');
+  function setAuthor(v){
+    data.meta.author = (v || '').trim();
+    if(authorInput.value !== data.meta.author) authorInput.value = data.meta.author;
+    if(mAuthor.value !== data.meta.author) mAuthor.value = data.meta.author;
+    persist();
+  }
+  try { data.meta.author = localStorage.getItem('krd-comment-author') || data.meta.author || ''; } catch(e){}
+  authorInput.value = data.meta.author || '';
+  mAuthor.value = data.meta.author || '';
+  authorInput.addEventListener('input', function(){ setAuthor(authorInput.value); });
+  mAuthor.addEventListener('input', function(){ setAuthor(mAuthor.value); });
+
+  // 카드마다 코멘트 아이콘 부착 (중복 생성 방지)
+  cards.forEach(function(card){
+    var btn = card.querySelector(':scope > .fc-comment');
+    if(!btn){
+      btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'fc-comment'; btn.setAttribute('aria-label','코멘트');
+      card.appendChild(btn);
+    }
+    btn.onclick = function(e){ e.stopPropagation(); openModal(card.getAttribute('data-cid')); };
+  });
+
+  function renderIcons(){
+    cards.forEach(function(card){
+      var arr = listOf(card.getAttribute('data-cid'));
+      var btn = card.querySelector(':scope > .fc-comment');
+      btn.innerHTML = BUBBLE + (arr.length ? '<span class="cbadge">'+arr.length+'</span>' : '');
+      btn.classList.toggle('has', arr.length > 0);
+    });
+  }
+
+  function itemHTML(cid, c, withJump){
+    var actions = '<button class="ci-btn" data-act="resolve" data-cid="'+cid+'" data-id="'+c.id+'">'+(c.resolved?'미해결로':'해결')+'</button>'
+                + '<button class="ci-btn danger" data-act="delete" data-cid="'+cid+'" data-id="'+c.id+'">삭제</button>';
+    var jump = withJump ? '<button class="cmt-jump" data-act="jump" data-cid="'+cid+'">해당 카드 ›</button>' : '';
+    return '<div class="cmt-item'+(c.resolved?' resolved':'')+'">'
+      + '<div class="ci-meta"><span class="ci-author">'+esc(c.author||'익명')+'</span><span>'+esc(c.ts)+'</span>'+jump+'</div>'
+      + '<div class="ci-text">'+esc(c.text)+'</div>'
+      + '<div class="ci-actions">'+actions+'</div></div>';
+  }
+
+  // 모아보기 패널
+  var listAll = document.getElementById('cmtListAll');
+  var totalCount = document.getElementById('cmtTotalCount');
+  function renderPanel(){
+    var html = '', all = 0;
+    cards.forEach(function(card){
+      var cid = card.getAttribute('data-cid');
+      var arr = listOf(cid);
+      if(!arr.length) return;
+      html += '<div class="cmt-group-title">'+esc(cardTitle(card))+'</div>';
+      arr.forEach(function(c){ html += itemHTML(cid, c, true); });
+    });
+    Object.keys(data.byCard).forEach(function(k){ all += (data.byCard[k]||[]).length; });
+    listAll.innerHTML = html || '<div class="cmt-empty">아직 코멘트가 없습니다. 각 카드 오른쪽 위의 말풍선 아이콘을 눌러 의견을 남겨보세요.</div>';
+    totalCount.textContent = all;
+  }
+
+  // 코멘트 모달
+  var overlay = document.getElementById('commentOverlay');
+  var mList = document.getElementById('cmtModalList');
+  var mTitle = document.getElementById('cmtModalTitle');
+  var mInput = document.getElementById('cmtInput');
+  var curCid = null;
+  function openModal(cid){
+    curCid = cid;
+    mTitle.textContent = cardTitle(cardByCid(cid));
+    mAuthor.value = data.meta.author || '';
+    renderModal();
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(function(){ (mAuthor.value ? mInput : mAuthor).focus(); }, 50);
+  }
+  function closeModal(){ overlay.classList.remove('open'); document.body.style.overflow = ''; curCid = null; }
+  function renderModal(){
+    if(!curCid) return;
+    var arr = listOf(curCid);
+    mList.innerHTML = arr.length ? arr.map(function(c){ return itemHTML(curCid, c, false); }).join('') : '<div class="cmt-empty">첫 코멘트를 남겨보세요.</div>';
+  }
+
+  var syncNote = document.getElementById('cmtSyncNote');
+  var addBtn = document.getElementById('cmtAddBtn');
+  var syncBusy = false;
+
+  function setSync(message, isError){
+    syncNote.textContent = message;
+    syncNote.style.color = isError ? '#b91c1c' : '';
+  }
+
+  function fetchComments(){ return window.KRDComments.refresh(); }
+  window.KRDComments.subscribe(function(rows, error){
+    if(error){ setSync(error.message + ' · 입력 내용은 유지됩니다', true); return; }
+    if(!rows) return;
+    var byCard = {};
+    rows.forEach(function(c){
+      if(!/^c\d+$/.test(c.cardId) || !/^[a-zA-Z0-9_-]+$/.test(c.id)) return;
+      if(!byCard[c.cardId]) byCard[c.cardId] = [];
+      byCard[c.cardId].push({id:c.id,author:c.author,ts:isoToKST(c.createdAt),text:c.body,resolved:!!c.resolved});
+    });
+    data.byCard = byCard;
+    persist(); renderAll();
+    setSync('구글시트와 동기화됨 · 다른 사용자의 댓글을 자동으로 확인합니다',false);
+  });
+
+  async function addComment(){
+    if(!curCid) return;
+    var text = mInput.value.trim();
+    if(!text) return;
+    setAuthor(mAuthor.value);
+    var author = data.meta.author || '익명';
+    addBtn.disabled = true;
+    addBtn.textContent = '저장 중…';
+    try {
+      await window.KRDComments.add(curCid, author, text);
+      mInput.value = '';
+      await fetchComments();
+    } catch(e) {
+      setSync('코멘트를 저장하지 못했습니다 · 입력 내용은 남아 있으니 다시 시도해주세요', true);
+    } finally {
+      addBtn.disabled = false;
+      addBtn.textContent = '코멘트 추가';
+    }
+  }
+
+  function renderAll(){ renderIcons(); renderPanel(); renderModal(); }
+
+  // 버튼 이벤트 위임 (모달·패널 공용)
+  document.addEventListener('click', async function(e){
+    var b = e.target.closest('[data-act]');
+    if(!b) return;
+    var act = b.getAttribute('data-act'), cid = b.getAttribute('data-cid'), id = b.getAttribute('data-id');
+    if(act === 'resolve'){
+      var it = (data.byCard[cid]||[]).filter(function(x){ return x.id === id; })[0];
+      if(it){
+        try {
+          await window.KRDComments.resolve(id, !it.resolved);
+          await fetchComments();
+        } catch(err) { setSync('코멘트 상태를 변경하지 못했습니다 · 다시 시도해주세요', true); }
+      }
+    } else if(act === 'delete'){
+      if(!confirm('이 코멘트를 삭제할까요?')) return;
+      try {
+        await window.KRDComments.remove(id);
+        await fetchComments();
+      } catch(err) { setSync('코멘트를 삭제하지 못했습니다 · 다시 시도해주세요', true); }
+    } else if(act === 'jump'){
+      var card = cardByCid(cid);
+      if(card){ card.scrollIntoView({behavior:'smooth', block:'center'}); openModal(cid); }
+    }
+  });
+
+  document.getElementById('cmtAddBtn').addEventListener('click', addComment);
+  document.getElementById('cmtClose').addEventListener('click', closeModal);
+  overlay.addEventListener('click', function(e){ if(e.target === overlay) closeModal(); });
+  mInput.addEventListener('keydown', function(e){ if((e.ctrlKey||e.metaKey) && e.key === 'Enter') addComment(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && overlay.classList.contains('open')) closeModal(); });
+
+  // 모아보기 패널 접기/펼치기
+  var panel = document.getElementById('cmtPanel');
+  document.getElementById('cmtPanelHead').addEventListener('click', function(){ panel.classList.toggle('open'); });
+
+  renderAll();
+  fetchComments();
+
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden) fetchComments(); });
+  window.addEventListener('focus', fetchComments);
+})();
+</script>
+
+
+
+</body></html>
