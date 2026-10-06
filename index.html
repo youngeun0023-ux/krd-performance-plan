@@ -3,8 +3,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>경평 계량평가 대응 KRD 성과관리시스템 구축 계획</title>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
 <style>
   /* ===== 색상 및 기본 토큰 ===== */
   :root{
@@ -28,7 +26,7 @@
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
   body{
-    font-family:"Pretendard","Pretendard Variable",-apple-system,BlinkMacSystemFont,"Malgun Gothic",sans-serif;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif;
     background:var(--bg);color:var(--ink);line-height:1.65;font-size:21.6px;
     -webkit-font-smoothing:antialiased;
   }
@@ -913,7 +911,7 @@ SCIE·SSCI·A&amp;HCI 포함
 
 <!-- 코멘트 데이터 저장소 (HTML 저장 시 함께 보존됨) -->
 <script src="sheets-config.js"></script>
-<script src="comments.js?v=20261006-savefix"></script>
+<script src="comments.js?v=20261006-speedfix"></script>
 <script type="application/json" id="commentData">{"meta":{"author":""},"byCard":{"c5":[{"id":"1151c178-25aa-46f1-8259-f526f3abad15","author":"권은화","text":"과제번호 미매칭 논문 4,553편의 누락률 개선 시\n - IRIS이관 과제(ernd 과제 번호와 202x-NRxxxx 형태의 과제번호 2개 보유)의 과제 번호 재매칭 필요(AI정보혁신총괄팀 전체 과제 정보 협조 필요 or 병철과장님 조분평 데이터 매칭 필요)\n - 과제번호 부분일치 확인 필요\n※ 대부분 연도 네자리, 문자+숫자 반복 3번+일련숫자 6자리이나, 1) 간혹 ernd 사업체계로 인해 문자+숫자 반복 4번 과제코드도 있고, 2) 통합이지바로 번호를 사용 시, 뒤에 2~3자리 숫자가 더 붙기도 함","resolved":false,"ts":"26. 09. 22. 16:51"},{"id":"m178848469118195","author":"송병철","text":"권은화 과장님이 보낸 ★과제_마스터 과제 정보로 매칭중(추후 매칭율 검토 후 AI정보혁신총괄팀과 협의 후 과제 DB 요청 예정)","resolved":false,"ts":"26. 09. 04. 10:18"},{"id":"m1788502905359192","author":"정형상","text":"1.  '알고리즘으로 분류' 코드 개발 중\n2.  '로컬 LLM으로 분류' 코드 개발 중\n  - 로컬 LLM: QWen3.6-35B 모델 설치 완료","resolved":false,"ts":"26. 09. 04. 15:21"},{"id":"m1790054840333436","author":"김영은","text":"[진행 현황] 2024년 수집 논문 34,279편을 대상으로 과제번호 매칭 수행\n- 과제 매칭 논문 29,726편, 미매칭 논문 4,553편\n- 복수 과제 연결을 포함한 논문–과제 매핑 약 4.8만 건 생성\n\n[향후 과제] 과제번호 미매칭 논문 4,553편의 누락률 개선\n- 공백·하이픈·특수문자 및 단계·연차번호 차이 확인\n- e-R&D·IRIS 이관 전후 과제번호 추가 확보\n- 통합 과제DB를 활용한 부분일치 및 역추적 매칭 검토","resolved":false,"ts":"26. 09. 22. 14:27"},{"id":"m1790054888101844","author":"김영은","text":"[진행 현황] 규칙 기반 1차 매칭 및 LM 2차 검증을 통해 논문 저자–과제 참여연구원 매칭 수행\n- 기존 수작업 결과와 비교 가능한 25,359건 중 약 21,800건의 참여율 산출값 일치\n- 신규 산출값이 높은 2,980건, 낮은 576건 확인\n\n[향후 과제] 저자 매칭 결과의 정확도 검증 및 로직 보완\n- 신규 산출값이 높은 2,980건 표본검증\n- 신규 산출값이 낮은 건 중 오류 추정 약 40건 재점검\n- 영문명 표준화 규칙의 정확도 확인\n- 추가 판단 모델 테스트","resolved":false,"ts":"26. 09. 22. 14:28"}],"c0":[{"id":"m1788484521868821","author":"송병철","text":"@이수진 연구원님\n - 제외사업 엑셀(유형, 사업명) 기준 수립 및 과거 특허 매칭 방식 결과 파일 공유해주시면 감사하겠습니다.","resolved":false,"ts":"26. 09. 04. 10:15"}],"c1":[{"id":"m1788484591746549","author":"송병철","text":"2024년 논문 서지 정보 수집 완료(Test용) \n- 2024년으로 Step 2- Step 5 진행(추후 다운로드 시점 결정)","resolved":false,"ts":"26. 09. 04. 10:16"}],"c3":[{"id":"m178848459689612","author":"송병철","text":"2024년 논문 서지 정보 수집 완료(Test용) \n- 2024년으로 Step 2- Step 5 진행(추후 다운로드 시점 결정)","resolved":false,"ts":"26. 09. 04. 10:16"},{"id":"m179005369827382","author":"김영은","text":"[완료] 2024년 논문 34,279건 수집 및 테스트 완료\n\nSCIE·SSCI·A&HCI 포함\n실제 WoS 출판연도를 기준으로 성과연도 재분류\n- 2024년 30,793건, 2025년 3,427건, 기타 59건\n\n[향후 과제] 전체 대상연도 수집시점 및 연도별 확정값 관리방식 결정\n- 매년 경영평가가 종료되면 해당 연도 이전 데이터는 확정값으로 고정함.\n- 미래 연도 데이터가 함께 조회되는 경우에는 해당 연도 처리 시점까지 보류함.","resolved":false,"ts":"26. 09. 22. 14:08"}],"c4":[{"id":"m1790054132218217","author":"김영은","text":"[향후 과제] 특허 수집·매칭 기준 확정 후 테스트 진행\n- 2024년·2025년 4분기 등 표본기간 우선 비교\n- 10월 초 시뮬레이션 추진","resolved":false,"ts":"26. 09. 22. 14:15"}],"c2":[{"id":"m1790054152910123","author":"김영은","text":"[향후 과제] 특허 API 테스트 착수\n- 사업명·과제명·과제번호 등 기준별 조회·조인 결과 비교\n- 대량 데이터 처리를 위해 개발용 PC 활용 검토","resolved":false,"ts":"26. 09. 22. 14:15"}],"c6":[{"id":"m1790054176077743","author":"김영은","text":"[향후 과제] 사업명·과제명·과제번호 기준을 각각 적용하여 결과 비교\n- 기준별 결과와 원데이터를 표본검토한 후 최종 매칭 기준 선정","resolved":false,"ts":"26. 09. 22. 14:16"}],"c7":[{"id":"m1790056673937660","author":"송병철","text":"핵심 이슈★ \u003c과제번호>\n미매칭된 4,553편 과제번호 매칭율 높일 수 있는 방안 검토\n 1. 3,254편 (사사에 재단 과제번호가 없는 논문) --> IRIS, 조분평 데이터에서 역추적\n 2. 1,299편 (과제번호 오류 등) \n- 과제번호 매칭율, 저자 매칭율 등으로 과제번호 매칭율 UP↑\n\n핵심 이슈★ \u003c저자명>\n신규 v.1.0의 신규 산출값 높은 2,980건에 대한 모델 검증","resolved":false,"ts":"26. 09. 22. 14:57"}]}}</script>
 
 <!-- STEP 상세 원본(숨김 · 편집 가능) -->
@@ -1484,6 +1482,8 @@ document.getElementById('saveBtn').addEventListener('click', function(){
   var syncNote = document.getElementById('cmtSyncNote');
   var addBtn = document.getElementById('cmtAddBtn');
   var hiddenCommentIds = new Set();
+  var pendingResolved = new Map();
+  var lastCommentSnapshot = "";
 
   function setSync(message, isError){
     syncNote.textContent = message;
@@ -1491,18 +1491,22 @@ document.getElementById('saveBtn').addEventListener('click', function(){
   }
 
   function fetchComments(){ return window.KRDComments.refresh(); }
-  window.KRDComments.subscribe(function(rows, error){
+  window.KRDComments.subscribe(function(rows, error, state){
     if(error){ setSync(error.message + ' · 입력 내용은 유지됩니다', true); return; }
     if(!rows) return;
     var byCard = {};
     rows.forEach(function(c){
       if(!/^c\d+$/.test(c.cardId) || !/^[a-zA-Z0-9_-]+$/.test(c.id) || hiddenCommentIds.has(c.id)) return;
       if(!byCard[c.cardId]) byCard[c.cardId] = [];
-      byCard[c.cardId].push({id:c.id,author:c.author,ts:isoToKST(c.createdAt),text:c.body,resolved:!!c.resolved});
+      byCard[c.cardId].push({id:c.id,author:c.author,ts:isoToKST(c.createdAt),text:c.body,resolved:pendingResolved.has(c.id) ? pendingResolved.get(c.id) : !!c.resolved});
     });
-    data.byCard = byCard;
-    persist(); renderAll();
-    setSync('구글시트와 동기화됨 · 다른 사용자의 댓글을 자동으로 확인합니다',false);
+    var snapshot = JSON.stringify(byCard);
+    if(snapshot !== lastCommentSnapshot){
+      data.byCard = byCard;
+      lastCommentSnapshot = snapshot;
+      persist(); renderAll();
+    }
+    setSync(state && state.cached ? '마지막으로 확인한 댓글을 표시했습니다 · 최신 내용 확인 중' : '구글시트와 동기화됨 · 다른 사용자의 댓글을 자동으로 확인합니다',false);
   });
 
   async function addComment(){
@@ -1534,11 +1538,28 @@ document.getElementById('saveBtn').addEventListener('click', function(){
     if(!b) return;
     var act = b.getAttribute('data-act'), cid = b.getAttribute('data-cid'), id = b.getAttribute('data-id');
     if(act === 'resolve'){
+      if(pendingResolved.has(id)) return;
       var it = (data.byCard[cid]||[]).filter(function(x){ return x.id === id; })[0];
       if(it){
+        var originalResolved = it.resolved;
+        var nextResolved = !originalResolved;
+        pendingResolved.set(id,nextResolved);
+        it.resolved = nextResolved;
+        lastCommentSnapshot = '';
+        persist(); renderAll();
+        setSync('상태를 변경했습니다 · 공유 저장소에 반영 중입니다', false);
         try {
-          await window.KRDComments.resolve(id, !it.resolved);
-        } catch(err) { setSync('코멘트 상태를 변경하지 못했습니다 · 다시 시도해주세요', true); }
+          await window.KRDComments.resolve(id, nextResolved);
+          setSync('코멘트 상태가 저장되었습니다', false);
+        } catch(err) {
+          var current = (data.byCard[cid]||[]).find(function(c){ return c.id === id; });
+          if(current) current.resolved = originalResolved;
+          lastCommentSnapshot = '';
+          persist(); renderAll();
+          setSync('상태 변경을 확인하지 못해 이전 상태로 복원했습니다', true);
+        } finally {
+          pendingResolved.delete(id);
+        }
       }
     } else if(act === 'delete'){
       if(hiddenCommentIds.has(id) || !confirm('이 코멘트를 삭제할까요?')) return;
@@ -1547,6 +1568,7 @@ document.getElementById('saveBtn').addEventListener('click', function(){
       var deletedComment = originalList[deletedIndex];
       if(!deletedComment) return;
       hiddenCommentIds.add(id);
+      lastCommentSnapshot = "";
       data.byCard[cid] = originalList.filter(function(c){ return c.id !== id; });
       persist(); renderAll();
       setSync('화면에서 삭제했습니다 · 공유 저장소에 반영 중입니다', false);
@@ -1557,6 +1579,7 @@ document.getElementById('saveBtn').addEventListener('click', function(){
         setSync('코멘트가 삭제되었습니다 · 다른 사용자에게도 반영됩니다', false);
       } catch(err) {
         hiddenCommentIds.delete(id);
+        lastCommentSnapshot = "";
         var currentList = data.byCard[cid] || [];
         if(!currentList.some(function(c){ return c.id === id; })) {
           currentList.splice(Math.min(deletedIndex, currentList.length), 0, deletedComment);
@@ -1584,8 +1607,7 @@ document.getElementById('saveBtn').addEventListener('click', function(){
   renderAll();
   fetchComments();
 
-  document.addEventListener('visibilitychange', function(){ if(!document.hidden) fetchComments(); });
-  window.addEventListener('focus', fetchComments);
+
 })();
 </script>
 
